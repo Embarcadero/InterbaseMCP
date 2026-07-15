@@ -40,9 +40,8 @@ begin
     Server.RegisterProvider(TIBSecurityTools.Create);
     Server.Run(mtStreamable, 'http://localhost:5000');
     Writeln('mcp-interbase listening at http://localhost:5000/mcp');
-    Writeln('Stop the process to shut down the server.');
-    while True do
-      TThread.Sleep(1000);
+    Writeln('Press ENTER to stop the process and shut down the server.');
+    ReadLn;
   finally
     Server.Stop;
     Server.Free;
