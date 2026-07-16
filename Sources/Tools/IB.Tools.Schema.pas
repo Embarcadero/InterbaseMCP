@@ -13,7 +13,7 @@ uses
 
 type
   /// <summary>
-  /// Provides MCP tools for introspecting the Interbase database schema.
+  /// MCP tools for database schema inspection.
   /// </summary>
   TIBSchemaTools = class(TMCPToolProvider)
   private
@@ -21,19 +21,13 @@ type
     FOwnsAudit: Boolean;
 
     function RunDiscoveryQuery(
-        const AToolName, ASql: string;
-        const AParamName: string = '';
-        const AParamValue: string = ''
+    const AToolName, ASql: string;
+    const AParamName: string = '';
+    const AParamValue: string = ''
     ): string;
   public
-    /// <summary>
-    /// Initializes the schema tools provider and its dependencies.
-    /// </summary>
     constructor Create; overload;
-    
-    /// <summary>
-    /// Destroys the schema tools provider and frees owned resources.
-    /// </summary>
+
     destructor Destroy; override;
 
     [MCPTool('get_database_info', 'Get InterBase database information')]
@@ -90,7 +84,7 @@ uses
   FireDAC.Stan.Param,
   IB.DatasetHelper;
 
-{ TIBSchemaTools }
+  { TIBSchemaTools }
 
 constructor TIBSchemaTools.Create;
 begin
@@ -114,30 +108,30 @@ end;
 function TIBSchemaTools.GetColumns(const Args: TJSONObject): TMCPToolResult;
 begin
   Result :=
-      TMCPToolResult.Text(
-          RunDiscoveryQuery('get_columns', SQL_GET_COLUMNS, 'table_name', Args.GetValue<string>('table_name', ''))
-      );
+  TMCPToolResult.Text(
+  RunDiscoveryQuery('get_columns', SQL_GET_COLUMNS, 'table_name', Args.GetValue<string>('table_name', ''))
+  );
 end;
 
 function TIBSchemaTools.GetForeignKeys(const Args: TJSONObject): TMCPToolResult;
 begin
   Result :=
-      TMCPToolResult.Text(
-          RunDiscoveryQuery(
-              'get_foreign_keys',
-              SQL_GET_FOREIGN_KEYS,
-              'table_name',
-              Args.GetValue<string>('table_name', '')
-          )
-      );
+  TMCPToolResult.Text(
+  RunDiscoveryQuery(
+  'get_foreign_keys',
+  SQL_GET_FOREIGN_KEYS,
+  'table_name',
+  Args.GetValue<string>('table_name', '')
+  )
+  );
 end;
 
 function TIBSchemaTools.GetIndexes(const Args: TJSONObject): TMCPToolResult;
 begin
   Result :=
-      TMCPToolResult.Text(
-          RunDiscoveryQuery('get_indexes', SQL_GET_INDEXES, 'table_name', Args.GetValue<string>('table_name', ''))
-      );
+  TMCPToolResult.Text(
+  RunDiscoveryQuery('get_indexes', SQL_GET_INDEXES, 'table_name', Args.GetValue<string>('table_name', ''))
+  );
 end;
 
 function TIBSchemaTools.GetViews(const Args: TJSONObject): TMCPToolResult;
@@ -157,11 +151,13 @@ end;
 
 function TIBSchemaTools.RunDiscoveryQuery(const AToolName, ASql, AParamName, AParamValue: string): string;
 var
+  Connection: TFDConnection;
   Query: TFDQuery;
   Params: TJSONObject;
   Stopwatch: TStopwatch;
 begin
   Stopwatch := TStopwatch.StartNew;
+  Connection := TIBConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     Params := TJSONObject.Create;
@@ -169,12 +165,12 @@ begin
       try
         if AParamName <> '' then
           Params.AddPair(AParamName, AParamValue);
-        Query.Connection := TIBConnectionManager.Instance.Connection;
+        Query.Connection := Connection;
         Query.SQL.Text := ASql;
         if (AParamName <> '') and (AParamValue <> '') then
           Query.ParamByName(AParamName).AsString := AParamValue.ToUpperInvariant;
         Query.Open;
-        Result := TIBDatasetHelper.DatasetToJson(Query, 0);
+        Result := TIBDatasetHelper.DatasetToJson(Query);
         Stopwatch.Stop;
         FAudit.WriteToolCall(AToolName, Params.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
       except
@@ -189,6 +185,7 @@ begin
     end;
   finally
     Query.Free;
+    Connection.Free;
   end;
 end;
 
@@ -239,3 +236,4 @@ begin
 end;
 
 end.
+

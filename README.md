@@ -99,4 +99,3 @@ Below is an overview of the required and optional parameters:
 ### `[Logging]`
 
 * **`AuditPath`** (Default: `logs/audit.jsonl`): The path where the server will write the tool execution audit logs. Logs are rotated daily.
-* **`LogToConsole`** (Default: `True`): If `True`, audit events will be printed to standard output.

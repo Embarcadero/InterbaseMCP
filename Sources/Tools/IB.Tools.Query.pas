@@ -14,7 +14,7 @@ uses
 
 type
   /// <summary>
-  /// Provides MCP tools for executing SQL queries and retrieving execution plans.
+  /// MCP tools for SQL execution and plans.
   /// </summary>
   TIBQueryTools = class(TMCPToolProvider)
   private
@@ -25,14 +25,8 @@ type
 
     function ExecuteDatasetJson(const ASql: string; const AParams: TJSONObject; AMaxRows: Integer): string;
   public
-    /// <summary>
-    /// Initializes the query tools provider and its dependencies.
-    /// </summary>
     constructor Create; overload;
-    
-    /// <summary>
-    /// Destroys the query tools provider and frees owned resources.
-    /// </summary>
+
     destructor Destroy; override;
 
     [MCPTool('execute_sql', 'Execute a SQL SELECT or EXECUTE PROCEDURE on the InterBase database')]
@@ -60,7 +54,7 @@ uses
   FireDAC.Stan.Param,
   IB.DatasetHelper;
 
-{ TIBQueryTools }
+  { TIBQueryTools }
 
 constructor TIBQueryTools.Create;
 begin
@@ -82,20 +76,23 @@ end;
 
 function TIBQueryTools.ExecuteDatasetJson(const ASql: string; const AParams: TJSONObject; AMaxRows: Integer): string;
 var
+  Connection: TFDConnection;
   Query: TFDQuery;
   Pair: TJSONPair;
 begin
+  Connection := TIBConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
-    Query.Connection := TIBConnectionManager.Instance.Connection;
+    Query.Connection := Connection;
     Query.SQL.Text := ASql;
     if Assigned(AParams) then
       for Pair in AParams do
         Query.ParamByName(Pair.JsonString.Value).Value := Pair.JsonValue.Value;
     Query.Open;
-    Result := TIBDatasetHelper.DatasetToJson(Query, AMaxRows);
+    Result := TIBDatasetHelper.DatasetToJson(Query);
   finally
     Query.Free;
+    Connection.Free;
   end;
 end;
 
@@ -159,6 +156,7 @@ function TIBQueryTools.ExplainPlan(const Args: TJSONObject): TMCPToolResult;
 var
   ExecutionPlan: string;
   Json: TJSONObject;
+  Connection: TFDConnection;
   Query: TFDQuery;
   Statement: TIBStatement;
   Sql: string;
@@ -171,10 +169,11 @@ begin
     Exit(TMCPToolResult.Error(Validation.Reason));
 
   Stopwatch := TStopwatch.StartNew;
+  Connection := TIBConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     try
-      Query.Connection := TIBConnectionManager.Instance.Connection;
+      Query.Connection := Connection;
       Query.SQL.Text := Sql;
       Query.Prepare;
       ExecutionPlan := '';
@@ -204,7 +203,9 @@ begin
     end;
   finally
     Query.Free;
+    Connection.Free;
   end;
 end;
 
 end.
+

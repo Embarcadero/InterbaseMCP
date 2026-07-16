@@ -16,25 +16,19 @@ uses
 
 type
   /// <summary>
-  /// Provides MCP tools for database security, privileges, and audit log retrieval.
+  /// MCP tools for security and audit access.
   /// </summary>
   TIBSecurityTools = class(TMCPToolProvider)
   private
     FValidator: TSqlValidator;
     FAudit: TAuditLogger;
-    FSettings: TIBSettings;
+    FSettings: TIBMCPSettings;
     FOwnsValidator: Boolean;
     FOwnsAudit: Boolean;
     function QueryJson(const ASql: string; const AParamName: string = ''; const AParamValue: string = ''): string;
   public
-    /// <summary>
-    /// Initializes the security tools provider and its dependencies.
-    /// </summary>
     constructor Create; overload;
-    
-    /// <summary>
-    /// Destroys the security tools provider and frees owned resources.
-    /// </summary>
+
     destructor Destroy; override;
 
     [MCPTool('validate_sql', 'Validate SQL without executing it')]
@@ -74,7 +68,7 @@ uses
 constructor TIBSecurityTools.Create;
 begin
   inherited Create;
-  FSettings := TIBSettings.Create;
+  FSettings := TIBMCPSettings.Create;
   FValidator := TSqlValidator.Create;
   FOwnsValidator := True;
   FAudit := TAuditLogger.Create;
@@ -93,18 +87,21 @@ end;
 
 function TIBSecurityTools.QueryJson(const ASql, AParamName, AParamValue: string): string;
 var
+  Connection: TFDConnection;
   Query: TFDQuery;
 begin
+  Connection := TIBConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
-    Query.Connection := TIBConnectionManager.Instance.Connection;
+    Query.Connection := Connection;
     Query.SQL.Text := ASql;
     if (AParamName <> '') and (AParamValue <> '') then
       Query.ParamByName(AParamName).AsString := AParamValue.ToUpperInvariant;
     Query.Open;
-    Result := TIBDatasetHelper.DatasetToJson(Query, 500);
+    Result := TIBDatasetHelper.DatasetToJson(Query);
   finally
     Query.Free;
+    Connection.Free;
   end;
 end;
 
@@ -129,7 +126,7 @@ function TIBSecurityTools.GetUserPrivileges(const Args: TJSONObject): TMCPToolRe
 begin
   try
     Result :=
-        TMCPToolResult.Text(QueryJson(SQL_GET_USER_PRIVILEGES, 'user_name', Args.GetValue<string>('user_name', '')));
+    TMCPToolResult.Text(QueryJson(SQL_GET_USER_PRIVILEGES, 'user_name', Args.GetValue<string>('user_name', '')));
   except
     on E: Exception do
       Result := TMCPToolResult.Error(E.Message);
@@ -202,3 +199,4 @@ begin
 end;
 
 end.
+

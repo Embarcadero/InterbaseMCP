@@ -11,15 +11,12 @@ uses
 
 type
   /// <summary>
-  /// Provides MCP tools for retrieving Interbase performance and statistics monitoring data.
+  /// MCP tools for InterBase statistics views.
   /// </summary>
   TIBStatisticsTools = class(TMCPToolProvider)
   private
     function QueryJson(const ASql: string; AMaxRows: Integer = 1000): string;
   public
-    /// <summary>
-    /// Initializes the statistics tools provider.
-    /// </summary>
     constructor Create; overload;
 
     [MCPTool('stat_attachments', 'Returns one row for each connection to a database')]
@@ -70,16 +67,19 @@ end;
 
 function TIBStatisticsTools.QueryJson(const ASql: string; AMaxRows: Integer): string;
 var
+  Connection: TFDConnection;
   Query: TFDQuery;
 begin
+  Connection := TIBConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
-    Query.Connection := TIBConnectionManager.Instance.Connection;
+    Query.Connection := Connection;
     Query.SQL.Text := ASql;
     Query.Open;
-    Result := TIBDatasetHelper.DatasetToJson(Query, AMaxRows);
+    Result := TIBDatasetHelper.DatasetToJson(Query);
   finally
     Query.Free;
+    Connection.Free;
   end;
 end;
 

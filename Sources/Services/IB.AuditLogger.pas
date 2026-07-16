@@ -8,45 +8,39 @@ uses
 
 type
   /// <summary>
-  /// Provides thread-safe, asynchronous logging for MCP tool calls and internal events.
+  /// Writes audit events and tool calls.
   /// </summary>
   TAuditLogger = class
   private
-    FSettings: TIBSettings;
+    FSettings: TIBMCPSettings;
     FOwnsSettings: Boolean;
 
     class function RedactCredentials(const AText: string): string; static;
     procedure AppendLine(const ALine: string);
   public
-    /// <summary>
-    /// Initializes a new instance of the audit logger.
-    /// </summary>
     constructor Create; overload;
-    
-    /// <summary>
-    /// Destroys the audit logger and frees owned resources.
-    /// </summary>
+
     destructor Destroy; override;
 
     /// <summary>
-    /// Logs a tool execution call, automatically redacting sensitive credentials.
+    /// Logs a tool call with credentials redacted.
     /// </summary>
-    /// <param name="AToolName">The name of the MCP tool executed.</param>
-    /// <param name="AParameters">The JSON parameters passed to the tool.</param>
-    /// <param name="AExecutionMs">The execution time in milliseconds.</param>
-    /// <param name="AOutcome">The outcome of the execution (e.g., success, error).</param>
+    /// <param name="AToolName">Tool name.</param>
+    /// <param name="AParameters">JSON parameters.</param>
+    /// <param name="AExecutionMs">Execution time in milliseconds.</param>
+    /// <param name="AOutcome">Execution outcome.</param>
     procedure WriteToolCall(
-        const AToolName: string;
-        const AParameters: string;
-        AExecutionMs: Int64;
-        const AOutcome: string
+    const AToolName: string;
+    const AParameters: string;
+    AExecutionMs: Int64;
+    const AOutcome: string
     );
 
     /// <summary>
-    /// Logs an internal system event.
+    /// Logs an internal event.
     /// </summary>
-    /// <param name="AEventName">The name of the event.</param>
-    /// <param name="APayload">The payload or details associated with the event.</param>
+    /// <param name="AEventName">Event name.</param>
+    /// <param name="APayload">Event payload.</param>
     procedure WriteEvent(const AEventName, APayload: string);
   end;
 
@@ -60,12 +54,12 @@ uses
   System.SysUtils,
   Dext.Threading.Async;
 
-{ TAuditLogger }
+  { TAuditLogger }
 
 constructor TAuditLogger.Create;
 begin
   inherited Create;
-  FSettings := TIBSettings.Create;
+  FSettings := TIBMCPSettings.Create;
   FOwnsSettings := True;
 end;
 
@@ -80,22 +74,19 @@ procedure TAuditLogger.AppendLine(const ALine: string);
 var
   FileName: string;
 begin
-  if FSettings.LogToConsole then
-    Writeln(ALine);
-
   FileName := ChangeFileExt(FSettings.AuditPath, '.' + FormatDateTime('yyyymmdd', Today) + '.jsonl');
   TAsyncTask
-      .Run(
-          procedure
-          var
-            DirectoryName: string;
-          begin
-            DirectoryName := ExtractFilePath(TPath.GetFullPath(FileName));
-            if DirectoryName <> '' then
-              TDirectory.CreateDirectory(DirectoryName);
-            TFile.AppendAllText(FileName, ALine + sLineBreak, TEncoding.UTF8);
-          end)
-      .Start;
+  .Run(
+  procedure
+  var
+  DirectoryName: string;
+  begin
+    DirectoryName := ExtractFilePath(TPath.GetFullPath(FileName));
+    if DirectoryName <> '' then
+      TDirectory.CreateDirectory(DirectoryName);
+    TFile.AppendAllText(FileName, ALine + sLineBreak, TEncoding.UTF8);
+  end)
+  .Start;
 end;
 
 class function TAuditLogger.RedactCredentials(const AText: string): string;
@@ -132,3 +123,4 @@ begin
 end;
 
 end.
+

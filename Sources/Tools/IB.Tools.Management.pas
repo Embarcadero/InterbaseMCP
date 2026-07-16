@@ -8,40 +8,27 @@ uses
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
   Dext.AI.MCP.Types,
-  IB.ConnectionManager,
   IB.AuditLogger,
   IB.MCP.Settings;
 
 type
   /// <summary>
-  /// Provides MCP tools for Interbase database management tasks (backup, restore, validate, sweep).
+  /// MCP tools for InterBase maintenance tasks.
   /// </summary>
   TIBManagementTools = class(TMCPToolProvider)
   private
-    FSettings: TIBSettings;
-    FConnectionManager: TIBConnectionManager;
+    FSettings: TIBMCPSettings;
     FAudit: TAuditLogger;
     FOwnsAudit: Boolean;
     class var FNextTaskId: Integer;
     function Accepted(const AOperation: string): TMCPToolResult;
   public
-    /// <summary>
-    /// Initializes the management tools with default settings and a singleton connection manager.
-    /// </summary>
     constructor Create; overload;
-    
-    /// <summary>
-    /// Initializes the management tools with a specific connection manager.
-    /// </summary>
-    constructor Create(ConnectionManager: TIBConnectionManager); overload;
-    
-    /// <summary>
-    /// Destroys the management tools and frees owned resources.
-    /// </summary>
+
     destructor Destroy; override;
 
     /// <summary>
-    /// Starts an InterBase backup task asynchronously.
+    /// Queues a backup task.
     /// </summary>
     [MCPTool('backup_database', 'Start an InterBase backup task')]
     [MCPParam('backup_file', 'Backup file path')]
@@ -49,7 +36,7 @@ type
     function BackupDatabase(const Args: TJSONObject): TMCPToolResult; virtual;
 
     /// <summary>
-    /// Starts an InterBase restore task asynchronously.
+    /// Queues a restore task.
     /// </summary>
     [MCPTool('restore_database', 'Start an InterBase restore task')]
     [MCPParam('backup_file', 'Backup file path')]
@@ -58,13 +45,13 @@ type
     function RestoreDatabase(const Args: TJSONObject): TMCPToolResult; virtual;
 
     /// <summary>
-    /// Starts an InterBase validation task asynchronously.
+    /// Queues a validation task.
     /// </summary>
     [MCPTool('validate_database', 'Start an InterBase validation task')]
     function ValidateDatabase(const Args: TJSONObject): TMCPToolResult; virtual;
 
     /// <summary>
-    /// Starts an InterBase sweep task asynchronously.
+    /// Queues a sweep task.
     /// </summary>
     [MCPTool('sweep_database', 'Start an InterBase sweep task')]
     function SweepDatabase(const Args: TJSONObject): TMCPToolResult; virtual;
@@ -84,17 +71,7 @@ uses
 constructor TIBManagementTools.Create;
 begin
   inherited Create;
-  FSettings := TIBSettings.Create;
-  FConnectionManager := TIBConnectionManager.Instance;
-  FAudit := TAuditLogger.Create;
-  FOwnsAudit := True;
-end;
-
-constructor TIBManagementTools.Create(ConnectionManager: TIBConnectionManager);
-begin
-  inherited Create;
-  FSettings := TIBSettings.Create;
-  FConnectionManager := ConnectionManager;
+  FSettings := TIBMCPSettings.Create;
   FAudit := TAuditLogger.Create;
   FOwnsAudit := True;
 end;

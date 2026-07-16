@@ -4,12 +4,12 @@ interface
 
 type
   /// <summary>
-  /// Main application class for the Interbase MCP server.
+  /// Application entry point for the InterBase MCP server.
   /// </summary>
   TIBMCPApp = class
   public
     /// <summary>
-    /// Initializes and runs the MCP server, blocking the current thread until the server is shut down.
+    /// Starts the MCP server and blocks until it is stopped.
     /// </summary>
     class procedure Run; static;
   end;
@@ -26,12 +26,15 @@ uses
   IB.Tools.Performance,
   IB.Tools.Security;
 
-{ TIBMCPApp }
+  { TIBMCPApp }
 
-class procedure TIBMCPApp.Run;
+  class procedure TIBMCPApp.Run;
 var
   Server: TMCPServer;
 begin
+  TIBConnectionManager.Initialize;
+  TIBConnectionManager.ValidateConnection;
+
   Server := TMCPServer.Create('mcp-interbase', '0.1.0');
   try
     Server.RegisterProvider(TIBQueryTools.Create);
@@ -49,3 +52,4 @@ begin
 end;
 
 end.
+

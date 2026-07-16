@@ -3,56 +3,34 @@ unit IB.ConnectionManager;
 interface
 
 uses
-  FireDAC.Comp.Client,
-  Dext.Options,
-  IB.MCP.Settings;
+  FireDAC.Comp.Client;
 
 type
   /// <summary>
-  /// Manages FireDAC database connections to Interbase using a singleton pattern and connection pooling.
+  /// Factory for InterBase FireDAC connections.
   /// </summary>
   TIBConnectionManager = class
   private
-    class var FInstance: TIBConnectionManager;
+    class var FInitialized: Boolean;
     class var FLock: TObject;
-
-    FConnection: TFDConnection;
-    FConnectionDefName: string;
-    FSettings: TIBSettings;
-    FOwnsSettings: Boolean;
 
     class constructor CreateClass;
     class destructor DestroyClass;
-    function EffectivePoolMaximum: Integer;
-    procedure ConfigureConnectionDef;
-    procedure EnsureConnectionDef;
+    class function EffectivePoolMaximum(const APoolSize, APoolMaxSize: Integer): Integer; static;
+    class procedure ConfigureConnection(AConnection: TFDConnection); static;
+    class procedure ConfigureConnectionDef; static;
   public
-    /// <summary>
-    /// Initializes a new connection manager instance.
-    /// </summary>
-    constructor Create; overload;
-    
-    /// <summary>
-    /// Destroys the connection manager and releases active connections.
-    /// </summary>
-    destructor Destroy; override;
+    /// <summary>Returns the configured FireDAC connection definition name.</summary>
+    class function ConnectionDefName: string; static;
 
-    /// <summary>
-    /// Returns the singleton instance of the connection manager.
-    /// </summary>
-    /// <returns>TIBConnectionManager instance.</returns>
-    class function Instance: TIBConnectionManager; static;
-    
-    /// <summary>
-    /// Retrieves an active FireDAC connection, acquiring it from the pool if necessary.
-    /// </summary>
-    /// <returns>An active TFDConnection.</returns>
-    function Connection: TFDConnection;
-    
-    /// <summary>
-    /// Closes and releases the active connection and removes the connection definition.
-    /// </summary>
-    procedure Close;
+    /// <summary>Configures the FDManager connection definition once.</summary>
+    class procedure Initialize; static;
+
+    /// <summary>Creates and opens a caller-owned connection.</summary>
+    class function CreateConnection: TFDConnection; static;
+
+    /// <summary>Opens and closes a test connection to validate startup configuration.</summary>
+    class procedure ValidateConnection; static;
   end;
 
 implementation
@@ -63,11 +41,15 @@ uses
   FireDAC.Stan.Def,
   FireDAC.Phys,
   FireDAC.Phys.IB,
-  FireDAC.DApt;
+  FireDAC.DApt,
+  IB.MCP.Settings;
 
-{ TIBConnectionManager }
+const
+  CConnectionDefName = 'IB_MCP_CONNECTION';
 
-class constructor TIBConnectionManager.CreateClass;
+  { TIBConnectionManager }
+
+  class constructor TIBConnectionManager.CreateClass;
 begin
   inherited;
   FLock := TObject.Create;
@@ -75,114 +57,98 @@ end;
 
 class destructor TIBConnectionManager.DestroyClass;
 begin
-  FInstance.Free;
   FLock.Free;
 end;
 
-constructor TIBConnectionManager.Create;
+class procedure TIBConnectionManager.ConfigureConnection(AConnection: TFDConnection);
 begin
-  inherited Create;
-  FSettings := TIBSettings.Create;
-  FOwnsSettings := True;
-  ConfigureConnectionDef;
+  Initialize;
+  AConnection.LoginPrompt := False;
+  AConnection.FormatOptions.StrsTrim := True;
+  AConnection.ConnectionDefName := ConnectionDefName;
 end;
 
-destructor TIBConnectionManager.Destroy;
-begin
-  Close;
-  if FOwnsSettings then
-    FSettings.Free;
-  inherited Destroy;
-end;
-
-class function TIBConnectionManager.Instance: TIBConnectionManager;
-begin
-  TMonitor.Enter(FLock);
-  try
-    if not Assigned(FInstance) then
-      FInstance := TIBConnectionManager.Create;
-    Result := FInstance;
-  finally
-    TMonitor.Exit(FLock);
-  end;
-end;
-
-function TIBConnectionManager.Connection: TFDConnection;
-begin
-  TMonitor.Enter(FLock);
-  try
-    EnsureConnectionDef;
-    if not Assigned(FConnection) then
-    begin
-      FConnection := TFDConnection.Create(nil);
-      FConnection.LoginPrompt := False;
-      FConnection.FormatOptions.StrsTrim := True;
-      FConnection.ConnectionDefName := FConnectionDefName;
-    end;
-
-    if not FConnection.Connected then
-      FConnection.Connected := True;
-
-    Result := FConnection;
-  finally
-    TMonitor.Exit(FLock);
-  end;
-end;
-
-procedure TIBConnectionManager.Close;
-begin
-  TMonitor.Enter(FLock);
-  try
-    FreeAndNil(FConnection);
-
-    if FConnectionDefName = '' then
-      Exit;
-
-    FDManager.CloseConnectionDef(FConnectionDefName);
-    FDManager.DeleteConnectionDef(FConnectionDefName);
-    FConnectionDefName := '';
-  finally
-    TMonitor.Exit(FLock);
-  end;
-end;
-
-procedure TIBConnectionManager.ConfigureConnectionDef;
+class procedure TIBConnectionManager.ConfigureConnectionDef;
 var
-  Params: TStringList;
+  LParams: TStringList;
+  LSettings: TIBMCPSettings;
 begin
-  FConnectionDefName := 'IB_MCP_CONNECTION';
-  Params := TStringList.Create;
+  LSettings := TIBMCPSettings.Create;
   try
-    Params.Values['Server'] := FSettings.Host;
-    Params.Values['Port'] := FSettings.Port.ToString;
-    Params.Values['Database'] := FSettings.Database;
-    Params.Values['User_Name'] := FSettings.UserName;
-    Params.Values['Password'] := FSettings.Password;
-    Params.Values['CharacterSet'] := FSettings.CharacterSet;
-    Params.Values['Pooled'] := 'True';
-    Params.Values['POOL_MaximumItems'] := EffectivePoolMaximum.ToString;
-    Params.Values['SSL'] := if FSettings.SSL then 'True' else 'False';
-    Params.Values['ReadOnly'] := if FSettings.AllowWrites then 'True' else 'False';
-    FDManager.Active := True;
-    FDManager.AddConnectionDef(FConnectionDefName, 'IB', Params, False);
+    LParams := TStringList.Create;
+    try
+      LParams.Values['Server'] := LSettings.Host;
+      LParams.Values['Port'] := LSettings.Port.ToString;
+      LParams.Values['Database'] := LSettings.Database;
+      LParams.Values['User_Name'] := LSettings.UserName;
+      LParams.Values['Password'] := LSettings.Password;
+      LParams.Values['CharacterSet'] := LSettings.CharacterSet;
+      LParams.Values['Pooled'] := 'True';
+      LParams.Values['POOL_MaximumItems'] := EffectivePoolMaximum(LSettings.PoolSize, LSettings.PoolMaxSize).ToString;
+      LParams.Values['SSL'] := if LSettings.SSL then 'True' else 'False';
+      LParams.Values['ReadOnly'] := if LSettings.AllowWrites then 'False' else 'True';
+
+      FDManager.Active := True;
+      FDManager.AddConnectionDef(ConnectionDefName, 'IB', LParams, False);
+    finally
+      LParams.Free;
+    end;
   finally
-    Params.Free;
+    LSettings.Free;
   end;
 end;
 
-procedure TIBConnectionManager.EnsureConnectionDef;
+class function TIBConnectionManager.ConnectionDefName: string;
 begin
-  if FConnectionDefName = '' then
-    ConfigureConnectionDef;
+  Result := CConnectionDefName;
 end;
 
-function TIBConnectionManager.EffectivePoolMaximum: Integer;
+class function TIBConnectionManager.CreateConnection: TFDConnection;
 begin
-  Result := FSettings.PoolMaxSize;
+  Result := TFDConnection.Create(nil);
+  try
+    ConfigureConnection(Result);
+    Result.Connected := True;
+  except
+    Result.Free;
+    raise;
+  end;
+end;
+
+class function TIBConnectionManager.EffectivePoolMaximum(const APoolSize, APoolMaxSize: Integer): Integer;
+begin
+  Result := APoolMaxSize;
   if Result <= 0 then
-    Result := FSettings.PoolSize;
+    Result := APoolSize;
   if Result <= 0 then
     Result := 10;
 end;
 
+class procedure TIBConnectionManager.Initialize;
+begin
+  TMonitor.Enter(FLock);
+  try
+    if FInitialized then
+      Exit;
+
+    ConfigureConnectionDef;
+    FInitialized := True;
+  finally
+    TMonitor.Exit(FLock);
+  end;
+end;
+
+class procedure TIBConnectionManager.ValidateConnection;
+var
+  LConnection: TFDConnection;
+begin
+  LConnection := CreateConnection;
+  try
+    // Opening the connection validates the FDManager definition and credentials.
+  finally
+    LConnection.Free;
+  end;
+end;
+
 end.
+
