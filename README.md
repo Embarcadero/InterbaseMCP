@@ -50,8 +50,6 @@ Manage privileges and review audit logs.
 
 ### 🧰 Database Management
 
-> **Note:** These features are yet to be implemented.
-
 Execute DBA-level tasks asynchronously.
 
 * **`backup_database`, `restore_database`**: Automate database backups and restores.
@@ -74,6 +72,12 @@ This project has been tested with **Delphi 13.0 and newer versions** and has a s
 Before running the server, you must configure the connection and security settings in the `mcp_interbase.ini` file located in the same directory as the executable.
 
 Below is an overview of the required and optional parameters:
+
+### `[MCPServer]`
+
+* **`MCPHost`** (Default: `localhost`): The hostname or IP address of the MCP server.
+* **`MCPPort`** (Default: `5000`): The port the MCP server will listen on.
+* **`MCPSecret`** (Default: empty): The shared secret for secure communication (if required).
 
 ### `[Database]`
 

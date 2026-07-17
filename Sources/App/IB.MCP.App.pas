@@ -51,22 +51,23 @@ begin
       Server.RegisterProvider(TIBSecurityTools.Create);
       Server.RegisterProvider(TIBStatisticsTools.Create);
 
-      Server.ConfigureApp(procedure(App: IApplicationBuilder)
-      begin
-        App.Use(
-        procedure(Context: IHttpContext; Next: TRequestDelegate)
+      if not Settings.MCPSecret.IsEmpty then
+        Server.ConfigureApp(procedure(App: IApplicationBuilder)
         begin
-          var ProvidedToken := Context.Request.GetHeader('Authorization');
-          if ProvidedToken <> Settings.MCPSecret then
-            begin
-              Context.Response.StatusCode := 401; // HTTP 401 Unauthorized
-              Context.Response.Write('Unauthorized: Invalid Shared Token');
-              Exit;
-            end;
-          Next(Context);
-        end
-        );
-      end);
+          App.Use(
+          procedure(Context: IHttpContext; Next: TRequestDelegate)
+          begin
+            var ProvidedToken := Context.Request.GetHeader('Authorization');
+            if ProvidedToken <> Settings.MCPSecret then
+              begin
+                Context.Response.StatusCode := 401; // HTTP 401 Unauthorized
+                Context.Response.Write('Unauthorized: Invalid Shared Token');
+                Exit;
+              end;
+            Next(Context);
+          end
+          );
+        end);
 
       Server.Run(mtStreamable, ServerUrl);
 
