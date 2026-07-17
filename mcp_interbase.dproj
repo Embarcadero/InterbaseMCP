@@ -6,9 +6,10 @@
         <MainSource>mcp_interbase.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
-        <Platform Condition="'$(Platform)'==''">Linux64</Platform>
+        <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>130</TargetedPlatforms>
         <AppType>Console</AppType>
+        <ProjectName Condition="'$(ProjectName)'==''">mcp_interbase</ProjectName>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>

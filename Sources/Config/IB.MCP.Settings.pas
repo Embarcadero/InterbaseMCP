@@ -8,6 +8,9 @@ type
   /// </summary>
   TIBMCPSettings = class
   private
+    FMCPHost: string;
+    FMCPPort: Integer;
+    FMCPSecret: string;
     FHost: string;
     FPort: Integer;
     FDatabase: string;
@@ -23,6 +26,13 @@ type
     FAuditPath: string;
   public
     constructor Create;
+
+    /// <summary>MCP server host.</summary>
+    property MCPHost: string read FMCPHost write FMCPHost;
+    /// <summary>MCP server port.</summary>
+    property MCPPort: Integer read FMCPPort write FMCPPort;
+    /// <summary>MCP server shared secret.</summary>
+    property MCPSecret: string read FMCPSecret write FMCPSecret;
 
     /// <summary>Database host.</summary>
     property Host: string read FHost write FHost;
@@ -70,6 +80,11 @@ begin
   LIniPath := ExtractFilePath(ParamStr(0)) + 'mcp_interbase.ini';
   LIniFile := TIniFile.Create(LIniPath);
   try
+    // [MCPServer]
+    FMCPHost := LIniFile.ReadString('MCPServer', 'MCPHost', 'localhost');
+    FMCPPort := LIniFile.ReadInteger('MCPServer', 'MCPPort', 5000);
+    FMCPSecret := LIniFile.ReadString('MCPServer', 'MCPSecret', '');
+
     // [Database]
     FHost := LIniFile.ReadString('Database', 'Host', 'localhost');
     FPort := LIniFile.ReadInteger('Database', 'Port', 3050);
