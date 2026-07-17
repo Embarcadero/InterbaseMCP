@@ -20,15 +20,16 @@ uses
   System.Classes,
   System.SysUtils,
   Dext.AI.MCP.Server,
+  Dext.Server.Engine.Types,
   IB.ConnectionManager,
   IB.Tools.Query,
   IB.Tools.Schema,
   IB.Tools.Performance,
   IB.Tools.Security;
 
-  { TIBMCPApp }
+{ TIBMCPApp }
 
-  class procedure TIBMCPApp.Run;
+class procedure TIBMCPApp.Run;
 var
   Server: TMCPServer;
 begin
@@ -39,8 +40,8 @@ begin
   try
     Server.RegisterProvider(TIBQueryTools.Create);
     Server.RegisterProvider(TIBSchemaTools.Create);
-    Server.RegisterProvider(TIBStatisticsTools.Create);
     Server.RegisterProvider(TIBSecurityTools.Create);
+    Server.RegisterProvider(TIBStatisticsTools.Create);
     Server.Run(mtStreamable, 'http://localhost:5000');
     Writeln('mcp-interbase listening at http://localhost:5000/mcp');
     Writeln('Press ENTER to stop the process and shut down the server.');
@@ -52,4 +53,5 @@ begin
 end;
 
 end.
+
 
