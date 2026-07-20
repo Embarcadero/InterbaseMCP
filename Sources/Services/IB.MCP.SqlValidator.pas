@@ -9,14 +9,19 @@ uses
 
 type
   /// <summary>
-  /// Result of SQL validation.
+  /// Outcome of a SQL validation check. <c>Accepted</c> is True when the
+  /// statement passed all rules; <c>Reason</c> carries a human-readable
+  /// rejection message when <c>Accepted</c> is False, or an informational
+  /// message when True.
   /// </summary>
   TIBMCPSqlValidationResult = record
+    /// <summary>True when the statement is permitted to execute.</summary>
     Accepted: Boolean;
+    /// <summary>Rejection reason (when Accepted = False) or informational note (when True).</summary>
     Reason: string;
-    Warning: string;
-    class function Allow(const AWarning: string = ''): TIBMCPSqlValidationResult; static;
-
+    /// <summary>Returns an accepted result with an optional informational reason.</summary>
+    class function Allow(const AReason: string = ''): TIBMCPSqlValidationResult; static;
+    /// <summary>Returns a rejected result with a mandatory rejection reason.</summary>
     class function Reject(const AReason: string): TIBMCPSqlValidationResult; static;
   end;
 
@@ -29,20 +34,26 @@ type
     FOwnsSettings: Boolean;
     FEmaByTool: TDictionary<string, Double>;
 
-    function HasDangerousKeyword(const ASql: string; out AKeyword: string): Boolean;
-    function StatementKind(const ASql: string): string;
+    /// <summary>Returns True when ASql contains a keyword forbidden by ForbiddenDML or ForbiddenDDL settings.</summary>
+    function HasForbiddenKeyword(const ASql: string; out AKeyword: string): Boolean;
   public
+    /// <summary>Creates the validator, loading settings from mcp_interbase.ini.</summary>
     constructor Create; overload;
-
     destructor Destroy; override;
 
     /// <summary>
-    /// Validates a SQL statement.
+    /// Returns True when the SQL statement produces a result-set cursor.
+    /// Recognised cursor forms: SELECT, EXECUTE PROCEDURE, EXECUTE BLOCK.
+    /// </summary>
+    function ReturnsCursor(const ASql: string): Boolean;
+
+    /// <summary>
+    /// Validates a SQL statement against the configured ForbiddenDML and
+    /// ForbiddenDDL keyword lists.
     /// </summary>
     /// <param name="ASql">SQL text to validate.</param>
-    /// <param name="AAllowWrites">Allows writes when enabled by settings.</param>
-    /// <returns>Validation outcome.</returns>
-    function ValidateSql(const ASql: string; AAllowWrites: Boolean = False): TIBMCPSqlValidationResult;
+    /// <returns>Validation outcome with Accepted = True when the statement is permitted.</returns>
+    function ValidateSql(const ASql: string): TIBMCPSqlValidationResult;
   end;
 
 implementation
@@ -53,18 +64,16 @@ uses
 
   { TIBMCPSqlValidationResult }
 
-class function TIBMCPSqlValidationResult.Allow(const AWarning: string): TIBMCPSqlValidationResult;
+  class function TIBMCPSqlValidationResult.Allow(const AReason: string): TIBMCPSqlValidationResult;
 begin
   Result.Accepted := True;
-  Result.Reason := '';
-  Result.Warning := AWarning;
+  Result.Reason := AReason;
 end;
 
 class function TIBMCPSqlValidationResult.Reject(const AReason: string): TIBMCPSqlValidationResult;
 begin
   Result.Accepted := False;
   Result.Reason := AReason;
-  Result.Warning := '';
 end;
 
 { TIBMCPSqlValidator }
@@ -85,8 +94,9 @@ begin
   inherited Destroy;
 end;
 
-function TIBMCPSqlValidator.HasDangerousKeyword(const ASql: string; out AKeyword: string): Boolean;
+function TIBMCPSqlValidator.HasForbiddenKeyword(const ASql: string; out AKeyword: string): Boolean;
 var
+  AllForbidden: string;
   Keywords: TArray<string>;
   Keyword: string;
   NormalizedKeyword: string;
@@ -95,7 +105,8 @@ begin
   Result := False;
   AKeyword := '';
   NormalizedSql := ' ' + ASql.ToUpperInvariant + ' ';
-  Keywords := FSettings.DangerousKeywords.Split([',']);
+  AllForbidden := FSettings.ForbiddenDML + ',' + FSettings.ForbiddenDDL;
+  Keywords := AllForbidden.Split([',']);
   for Keyword in Keywords do begin
     NormalizedKeyword := Trim(Keyword).ToUpperInvariant;
     if NormalizedKeyword = '' then
@@ -108,48 +119,26 @@ begin
   end;
 end;
 
-function TIBMCPSqlValidator.StatementKind(const ASql: string): string;
+function TIBMCPSqlValidator.ReturnsCursor(const ASql: string): Boolean;
 var
   Sql: string;
 begin
   Sql := Trim(ASql).ToUpperInvariant;
-  if Sql.StartsWith('EXECUTE PROCEDURE') then
-    Exit('EXECUTE PROCEDURE');
-  if Sql.StartsWith('EXECUTE BLOCK') then
-    Exit('EXECUTE BLOCK');
-  if Sql.StartsWith('SELECT') then
-    Exit('SELECT');
-  if Sql.StartsWith('UPDATE') then
-    Exit('UPDATE');
-  if Sql.StartsWith('INSERT') then
-    Exit('INSERT');
-  if Sql.StartsWith('DELETE') then
-    Exit('DELETE');
-  Result := '';
+  Result := Sql.StartsWith('SELECT');
 end;
 
-function TIBMCPSqlValidator.ValidateSql(const ASql: string; AAllowWrites: Boolean): TIBMCPSqlValidationResult;
+function TIBMCPSqlValidator.ValidateSql(const ASql: string): TIBMCPSqlValidationResult;
 var
   Keyword: string;
-  Kind: string;
 begin
   if Trim(ASql) = '' then
     Exit(TIBMCPSqlValidationResult.Reject('SQL text is required.'));
 
-  if HasDangerousKeyword(ASql, Keyword) then
-    Exit(TIBMCPSqlValidationResult.Reject('Dangerous SQL keyword is not allowed: ' + Keyword));
+  if HasForbiddenKeyword(ASql, Keyword) then
+    Exit(TIBMCPSqlValidationResult.Reject('Forbidden SQL keyword detected: ' + Keyword));
 
-  Kind := StatementKind(ASql);
-  if (Kind = 'SELECT') or (Kind = 'EXECUTE PROCEDURE') or (Kind = 'EXECUTE BLOCK') then
-    Exit(TIBMCPSqlValidationResult.Allow);
-
-  if (Kind = 'UPDATE') or (Kind = 'INSERT') or (Kind = 'DELETE') then begin
-    if FSettings.AllowWrites and AAllowWrites then
-      Exit(TIBMCPSqlValidationResult.Allow);
-    Exit(TIBMCPSqlValidationResult.Reject('Write statements require AllowWrites=true.'));
-  end;
-
-  Result := TIBMCPSqlValidationResult.Reject('Statement type is not allowlisted.');
+  Result := TIBMCPSqlValidationResult.Allow('Permitted SQL statement.');
 end;
 
 end.
+

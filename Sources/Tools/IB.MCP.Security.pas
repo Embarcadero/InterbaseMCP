@@ -25,16 +25,12 @@ type
     FSettings: TIBMCPSettings;
     FOwnsValidator: Boolean;
     FOwnsAudit: Boolean;
+    /// <summary>Executes a read-only discovery SQL statement and returns results as a JSON string.</summary>
     function QueryJson(const ASql: string; const AParamName: string = ''; const AParamValue: string = ''): string;
   public
     constructor Create; overload;
 
     destructor Destroy; override;
-
-    [MCPTool('validate_sql', 'Validate SQL without executing it')]
-    [MCPParam('sql', 'SQL statement to validate')]
-    [MCPParam('allow_writes', 'Allow write statements for this validation', ptBoolean, False)]
-    function ValidateSql(const Args: TJSONObject): TMCPToolResult; virtual;
 
     [MCPTool('get_user_privileges', 'List InterBase privileges for a user')]
     [MCPParam('user_name', 'User name')]
@@ -104,23 +100,6 @@ begin
   finally
     Query.Free;
     Connection.Free;
-  end;
-end;
-
-function TIBMCPSecurityTools.ValidateSql(const Args: TJSONObject): TMCPToolResult;
-var
-  Json: TJSONObject;
-  Validation: TIBMCPSqlValidationResult;
-begin
-  Validation := FValidator.ValidateSql(Args.GetValue<string>('sql', ''), Args.GetValue<Boolean>('allow_writes', False));
-  Json := TJSONObject.Create;
-  try
-    Json.AddPair('accepted', TJSONBool.Create(Validation.Accepted));
-    Json.AddPair('reason', Validation.Reason);
-    Json.AddPair('warning', Validation.Warning);
-    Result := TMCPToolResult.Text(Json.ToJSON);
-  finally
-    Json.Free;
   end;
 end;
 

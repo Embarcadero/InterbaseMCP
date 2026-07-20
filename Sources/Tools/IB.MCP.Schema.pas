@@ -20,6 +20,10 @@ type
     FAudit: TIBMCPAuditLogger;
     FOwnsAudit: Boolean;
 
+    /// <summary>
+    /// Runs a schema-discovery SELECT, optionally binding a single named parameter,
+    /// and returns the result set serialised as a JSON string. Audit logs the call.
+    /// </summary>
     function RunDiscoveryQuery(
       const AToolName, ASql: string;
       const AParamName: string = '';

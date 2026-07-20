@@ -580,7 +580,8 @@ implementation
 
 uses
   System.JSON,
-  FireDAC.Stan.Intf;
+  FireDAC.Stan.Intf,
+  FireDAC.Stan.StorageJSON;
 
   { TIBMCPDatasetHelper }
 
@@ -588,7 +589,7 @@ class function TIBMCPDatasetHelper.DatasetToJson(const ADataSet: TFDQuery): stri
 begin
   var LStr := TStringStream.Create('');
   try
-    ADataSet.SaveToStream(LStr, sfFreeFormJSON);
+    ADataSet.SaveToStream(LStr, sfJSON);
     Result := LStr.DataString;
   finally
     LStr.Free;

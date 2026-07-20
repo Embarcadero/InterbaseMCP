@@ -9,7 +9,8 @@ type
   TIBMCPApp = class
   public
     /// <summary>
-    /// Starts the MCP server and blocks until it is stopped.
+    /// Starts the MCP server (HTTP or HTTPS depending on UseHttps setting)
+    /// and blocks until the user presses ENTER.
     /// </summary>
     class procedure Run; static;
   end;
@@ -43,7 +44,10 @@ begin
 
   Settings := TIBMCPSettings.Create;
   try
-    ServerUrl := Format('http://%s:%d', [Settings.MCPHost, Settings.MCPPort]);
+    if Settings.UseHttps then
+      ServerUrl := Format('https://%s:%d', [Settings.MCPHost, Settings.MCPPort])
+    else
+      ServerUrl := Format('http://%s:%d', [Settings.MCPHost, Settings.MCPPort]);
 
     Server := TMCPServer.Create('mcp-interbase', '0.1.0');
     try

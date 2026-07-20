@@ -15,6 +15,7 @@ type
   /// </summary>
   TIBMCPStatisticsTools = class(TMCPToolProvider)
   private
+    /// <summary>Executes a monitoring-view SELECT and returns the result set as a JSON string.</summary>
     function QueryJson(const ASql: string; AMaxRows: Integer = 1000): string;
   public
     constructor Create; overload;

@@ -14,7 +14,9 @@ uses
 
 type
   /// <summary>
-  /// MCP tools for SQL execution and plans.
+  /// MCP tools for SQL execution and execution-plan inspection.
+  /// Routes statements to <c>ExecDataset</c> (cursor-producing) or
+  /// <c>ExecStatement</c> (DML) based on <c>ReturnsCursor</c>.
   /// </summary>
   TIBMCPQueryTools = class(TMCPToolProvider)
   private
@@ -23,15 +25,17 @@ type
     FOwnsValidator: Boolean;
     FOwnsAudit: Boolean;
 
-    function ExecuteDatasetJson(const ASql: string; const AParams: TJSONObject; AMaxRows: Integer): string;
+    /// <summary>Runs a cursor-returning SQL statement and serialises the result set to JSON.</summary>
+    function ExecDataset(const ASql: string; const AParams: TJSONObject): string;
+    /// <summary>Runs a non-cursor SQL statement and returns affected-row count as JSON.</summary>
+    function ExecStatement(const ASql: string): string;
   public
     constructor Create; overload;
 
     destructor Destroy; override;
 
-    [MCPTool('execute_sql', 'Execute a SQL SELECT or EXECUTE PROCEDURE on the InterBase database')]
+    [MCPTool('execute_sql', 'Execute a SQL statement on the InterBase database')]
     [MCPParam('sql', 'The SQL statement to execute')]
-    [MCPParam('max_rows', 'Maximum rows to return (default 200)', ptInteger, False)]
     function ExecuteSql(const Args: TJSONObject): TMCPToolResult; virtual;
 
     [MCPTool('explain_plan', 'Return the InterBase execution plan for a SQL statement')]
@@ -74,7 +78,7 @@ begin
   inherited Destroy;
 end;
 
-function TIBMCPQueryTools.ExecuteDatasetJson(const ASql: string; const AParams: TJSONObject; AMaxRows: Integer): string;
+function TIBMCPQueryTools.ExecDataset(const ASql: string; const AParams: TJSONObject): string;
 var
   Connection: TFDConnection;
   Query: TFDQuery;
@@ -96,51 +100,35 @@ begin
   end;
 end;
 
-function TIBMCPQueryTools.ExecuteProcedure(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPQueryTools.ExecStatement(const ASql: string): string;
 var
-  Params: TJSONObject;
-  ProcName: string;
-  Sql: string;
-  Stopwatch: TStopwatch;
-  Validation: TIBMCPSqlValidationResult;
+  Connection: TFDConnection;
 begin
-  ProcName := Args.GetValue<string>('proc_name', '').Trim;
-  Params := Args.GetValue<TJSONObject>('params');
-  Sql := 'execute procedure ' + ProcName;
-  Validation := FValidator.ValidateSql(Sql);
-  if not Validation.Accepted then
-    Exit(TMCPToolResult.Error(Validation.Reason));
-
-  Stopwatch := TStopwatch.StartNew;
+  Connection := TIBMCPConnectionManager.CreateConnection;
   try
-    Result := TMCPToolResult.Text(ExecuteDatasetJson(Sql, Params, 200));
-    Stopwatch.Stop;
-    FAudit.WriteToolCall('execute_procedure', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
-  except
-    on E: Exception do begin
-      Stopwatch.Stop;
-      FAudit.WriteToolCall('execute_procedure', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
-      Result := TMCPToolResult.Error(E.Message);
-    end;
+    Result := '{"Affected rows": ' + Connection.ExecSQL(ASql).ToString + '}';
+  finally
+    Connection.Free;
   end;
 end;
 
 function TIBMCPQueryTools.ExecuteSql(const Args: TJSONObject): TMCPToolResult;
 var
   Sql: string;
-  MaxRows: Integer;
   Stopwatch: TStopwatch;
   Validation: TIBMCPSqlValidationResult;
 begin
   Sql := Args.GetValue<string>('sql', '');
-  MaxRows := Args.GetValue<Integer>('max_rows', 200);
-  Validation := FValidator.ValidateSql(Sql, False);
+  Validation := FValidator.ValidateSql(Sql);
   if not Validation.Accepted then
     Exit(TMCPToolResult.Error(Validation.Reason));
 
   Stopwatch := TStopwatch.StartNew;
   try
-    Result := TMCPToolResult.Text(ExecuteDatasetJson(Sql, nil, MaxRows));
+    if FValidator.ReturnsCursor(Sql) then
+      Result := TMCPToolResult.Text(ExecDataset(Sql, nil))
+    else
+      Result := TMCPToolResult.Text(ExecStatement(Sql));
     Stopwatch.Stop;
     FAudit.WriteToolCall('execute_sql', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
   except
@@ -164,7 +152,7 @@ var
   Validation: TIBMCPSqlValidationResult;
 begin
   Sql := Args.GetValue<string>('sql', '');
-  Validation := FValidator.ValidateSql(Sql, False);
+  Validation := FValidator.ValidateSql(Sql);
   if not Validation.Accepted then
     Exit(TMCPToolResult.Error(Validation.Reason));
 
@@ -204,6 +192,35 @@ begin
   finally
     Query.Free;
     Connection.Free;
+  end;
+end;
+
+function TIBMCPQueryTools.ExecuteProcedure(const Args: TJSONObject): TMCPToolResult;
+var
+  Params: TJSONObject;
+  ProcName: string;
+  Sql: string;
+  Stopwatch: TStopwatch;
+  Validation: TIBMCPSqlValidationResult;
+begin
+  ProcName := Args.GetValue<string>('proc_name', '').Trim;
+  Params := Args.GetValue<TJSONObject>('params');
+  Sql := 'execute procedure ' + ProcName;
+  Validation := FValidator.ValidateSql(Sql);
+  if not Validation.Accepted then
+    Exit(TMCPToolResult.Error(Validation.Reason));
+
+  Stopwatch := TStopwatch.StartNew;
+  try
+    Result := TMCPToolResult.Text(ExecDataset(Sql, Params));
+    Stopwatch.Stop;
+    FAudit.WriteToolCall('execute_procedure', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
+  except
+    on E: Exception do begin
+      Stopwatch.Stop;
+      FAudit.WriteToolCall('execute_procedure', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+      Result := TMCPToolResult.Error(E.Message);
+    end;
   end;
 end;
 

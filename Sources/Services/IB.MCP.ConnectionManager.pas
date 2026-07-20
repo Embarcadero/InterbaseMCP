@@ -16,7 +16,6 @@ type
 
     class constructor CreateClass;
     class destructor DestroyClass;
-    class function EffectivePoolMaximum(const APoolSize, APoolMaxSize: Integer): Integer; static;
     class procedure ConfigureConnection(AConnection: TFDConnection); static;
     class procedure ConfigureConnectionDef; static;
   public
@@ -49,7 +48,7 @@ const
 
   { TIBMCPConnectionManager }
 
-class constructor TIBMCPConnectionManager.CreateClass;
+  class constructor TIBMCPConnectionManager.CreateClass;
 begin
   inherited;
   FLock := TObject.Create;
@@ -84,10 +83,6 @@ begin
       LParams.Values['Password'] := LSettings.Password;
       LParams.Values['CharacterSet'] := LSettings.CharacterSet;
       LParams.Values['Pooled'] := 'True';
-      LParams.Values['POOL_MaximumItems'] := EffectivePoolMaximum(LSettings.PoolSize, LSettings.PoolMaxSize).ToString;
-      LParams.Values['SSL'] := if LSettings.SSL then 'True' else 'False';
-      LParams.Values['ReadOnly'] := if LSettings.AllowWrites then 'False' else 'True';
-
       FDManager.Active := True;
       FDManager.AddConnectionDef(ConnectionDefName, 'IB', LParams, False);
     finally
@@ -113,15 +108,6 @@ begin
     Result.Free;
     raise;
   end;
-end;
-
-class function TIBMCPConnectionManager.EffectivePoolMaximum(const APoolSize, APoolMaxSize: Integer): Integer;
-begin
-  Result := APoolMaxSize;
-  if Result <= 0 then
-    Result := APoolSize;
-  if Result <= 0 then
-    Result := 10;
 end;
 
 class procedure TIBMCPConnectionManager.Initialize;
@@ -151,3 +137,4 @@ begin
 end;
 
 end.
+
