@@ -1,4 +1,4 @@
-unit IB.SqlValidator;
+unit IB.MCP.SqlValidator;
 
 interface
 
@@ -11,19 +11,19 @@ type
   /// <summary>
   /// Result of SQL validation.
   /// </summary>
-  TSqlValidationResult = record
+  TIBMCPSqlValidationResult = record
     Accepted: Boolean;
     Reason: string;
     Warning: string;
-    class function Allow(const AWarning: string = ''): TSqlValidationResult; static;
+    class function Allow(const AWarning: string = ''): TIBMCPSqlValidationResult; static;
 
-    class function Reject(const AReason: string): TSqlValidationResult; static;
+    class function Reject(const AReason: string): TIBMCPSqlValidationResult; static;
   end;
 
   /// <summary>
   /// Validates SQL against configured safety rules.
   /// </summary>
-  TSqlValidator = class
+  TIBMCPSqlValidator = class
   private
     FSettings: TIBMCPSettings;
     FOwnsSettings: Boolean;
@@ -42,7 +42,7 @@ type
     /// <param name="ASql">SQL text to validate.</param>
     /// <param name="AAllowWrites">Allows writes when enabled by settings.</param>
     /// <returns>Validation outcome.</returns>
-    function ValidateSql(const ASql: string; AAllowWrites: Boolean = False): TSqlValidationResult;
+    function ValidateSql(const ASql: string; AAllowWrites: Boolean = False): TIBMCPSqlValidationResult;
   end;
 
 implementation
@@ -51,25 +51,25 @@ uses
   System.StrUtils,
   System.SysUtils;
 
-  { TSqlValidationResult }
+  { TIBMCPSqlValidationResult }
 
-  class function TSqlValidationResult.Allow(const AWarning: string): TSqlValidationResult;
+class function TIBMCPSqlValidationResult.Allow(const AWarning: string): TIBMCPSqlValidationResult;
 begin
   Result.Accepted := True;
   Result.Reason := '';
   Result.Warning := AWarning;
 end;
 
-class function TSqlValidationResult.Reject(const AReason: string): TSqlValidationResult;
+class function TIBMCPSqlValidationResult.Reject(const AReason: string): TIBMCPSqlValidationResult;
 begin
   Result.Accepted := False;
   Result.Reason := AReason;
   Result.Warning := '';
 end;
 
-{ TSqlValidator }
+{ TIBMCPSqlValidator }
 
-constructor TSqlValidator.Create;
+constructor TIBMCPSqlValidator.Create;
 begin
   inherited Create;
   FSettings := TIBMCPSettings.Create;
@@ -77,7 +77,7 @@ begin
   FEmaByTool := TDictionary<string, Double>.Create;
 end;
 
-destructor TSqlValidator.Destroy;
+destructor TIBMCPSqlValidator.Destroy;
 begin
   FEmaByTool.Free;
   if FOwnsSettings then
@@ -85,7 +85,7 @@ begin
   inherited Destroy;
 end;
 
-function TSqlValidator.HasDangerousKeyword(const ASql: string; out AKeyword: string): Boolean;
+function TIBMCPSqlValidator.HasDangerousKeyword(const ASql: string; out AKeyword: string): Boolean;
 var
   Keywords: TArray<string>;
   Keyword: string;
@@ -108,7 +108,7 @@ begin
   end;
 end;
 
-function TSqlValidator.StatementKind(const ASql: string): string;
+function TIBMCPSqlValidator.StatementKind(const ASql: string): string;
 var
   Sql: string;
 begin
@@ -128,29 +128,28 @@ begin
   Result := '';
 end;
 
-function TSqlValidator.ValidateSql(const ASql: string; AAllowWrites: Boolean): TSqlValidationResult;
+function TIBMCPSqlValidator.ValidateSql(const ASql: string; AAllowWrites: Boolean): TIBMCPSqlValidationResult;
 var
   Keyword: string;
   Kind: string;
 begin
   if Trim(ASql) = '' then
-    Exit(TSqlValidationResult.Reject('SQL text is required.'));
+    Exit(TIBMCPSqlValidationResult.Reject('SQL text is required.'));
 
   if HasDangerousKeyword(ASql, Keyword) then
-    Exit(TSqlValidationResult.Reject('Dangerous SQL keyword is not allowed: ' + Keyword));
+    Exit(TIBMCPSqlValidationResult.Reject('Dangerous SQL keyword is not allowed: ' + Keyword));
 
   Kind := StatementKind(ASql);
   if (Kind = 'SELECT') or (Kind = 'EXECUTE PROCEDURE') or (Kind = 'EXECUTE BLOCK') then
-    Exit(TSqlValidationResult.Allow);
+    Exit(TIBMCPSqlValidationResult.Allow);
 
   if (Kind = 'UPDATE') or (Kind = 'INSERT') or (Kind = 'DELETE') then begin
     if FSettings.AllowWrites and AAllowWrites then
-      Exit(TSqlValidationResult.Allow);
-    Exit(TSqlValidationResult.Reject('Write statements require AllowWrites=true.'));
+      Exit(TIBMCPSqlValidationResult.Allow);
+    Exit(TIBMCPSqlValidationResult.Reject('Write statements require AllowWrites=true.'));
   end;
 
-  Result := TSqlValidationResult.Reject('Statement type is not allowlisted.');
+  Result := TIBMCPSqlValidationResult.Reject('Statement type is not allowlisted.');
 end;
 
 end.
-

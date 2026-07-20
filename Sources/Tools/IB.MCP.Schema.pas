@@ -1,4 +1,4 @@
-unit IB.Tools.Schema;
+unit IB.MCP.Schema;
 
 interface
 
@@ -8,22 +8,22 @@ uses
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
   Dext.AI.MCP.Types,
-  IB.ConnectionManager,
-  IB.AuditLogger;
+  IB.MCP.ConnectionManager,
+  IB.MCP.AuditLogger;
 
 type
   /// <summary>
   /// MCP tools for database schema inspection.
   /// </summary>
-  TIBSchemaTools = class(TMCPToolProvider)
+  TIBMCPSchemaTools = class(TMCPToolProvider)
   private
-    FAudit: TAuditLogger;
+    FAudit: TIBMCPAuditLogger;
     FOwnsAudit: Boolean;
 
     function RunDiscoveryQuery(
-    const AToolName, ASql: string;
-    const AParamName: string = '';
-    const AParamValue: string = ''
+      const AToolName, ASql: string;
+      const AParamName: string = '';
+      const AParamValue: string = ''
     ): string;
   public
     constructor Create; overload;
@@ -82,74 +82,74 @@ uses
   System.SysUtils,
   FireDAC.Comp.Client,
   FireDAC.Stan.Param,
-  IB.DatasetHelper;
+  IB.MCP.DatasetHelper;
 
-  { TIBSchemaTools }
+  { TIBMCPSchemaTools }
 
-constructor TIBSchemaTools.Create;
+constructor TIBMCPSchemaTools.Create;
 begin
   inherited Create;
-  FAudit := TAuditLogger.Create;
+  FAudit := TIBMCPAuditLogger.Create;
   FOwnsAudit := True;
 end;
 
-destructor TIBSchemaTools.Destroy;
+destructor TIBMCPSchemaTools.Destroy;
 begin
   if FOwnsAudit then
     FAudit.Free;
   inherited Destroy;
 end;
 
-function TIBSchemaTools.GetCheckConstraints(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetCheckConstraints(const Args: TJSONObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_check_constraints', SQL_GET_CHECK_CONSTRAINTS));
 end;
 
-function TIBSchemaTools.GetColumns(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetColumns(const Args: TJSONObject): TMCPToolResult;
 begin
   Result :=
-  TMCPToolResult.Text(
-  RunDiscoveryQuery('get_columns', SQL_GET_COLUMNS, 'table_name', Args.GetValue<string>('table_name', ''))
-  );
+    TMCPToolResult.Text(
+      RunDiscoveryQuery('get_columns', SQL_GET_COLUMNS, 'table_name', Args.GetValue<string>('table_name', ''))
+    );
 end;
 
-function TIBSchemaTools.GetForeignKeys(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetForeignKeys(const Args: TJSONObject): TMCPToolResult;
 begin
   Result :=
-  TMCPToolResult.Text(
-  RunDiscoveryQuery(
-  'get_foreign_keys',
-  SQL_GET_FOREIGN_KEYS,
-  'table_name',
-  Args.GetValue<string>('table_name', '')
-  )
-  );
+    TMCPToolResult.Text(
+      RunDiscoveryQuery(
+        'get_foreign_keys',
+        SQL_GET_FOREIGN_KEYS,
+        'table_name',
+        Args.GetValue<string>('table_name', '')
+      )
+    );
 end;
 
-function TIBSchemaTools.GetIndexes(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetIndexes(const Args: TJSONObject): TMCPToolResult;
 begin
   Result :=
-  TMCPToolResult.Text(
-  RunDiscoveryQuery('get_indexes', SQL_GET_INDEXES, 'table_name', Args.GetValue<string>('table_name', ''))
-  );
+    TMCPToolResult.Text(
+      RunDiscoveryQuery('get_indexes', SQL_GET_INDEXES, 'table_name', Args.GetValue<string>('table_name', ''))
+    );
 end;
 
-function TIBSchemaTools.GetViews(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetViews(const Args: TJSONObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_views', SQL_GET_VIEWS));
 end;
 
-function TIBSchemaTools.GetTables(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetTables(const Args: TJSONObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('list_tables', SQL_GET_TABLES));
 end;
 
-function TIBSchemaTools.GetDatabaseInfo(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetDatabaseInfo(const Args: TJSONObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_database_details', SQL_GET_DATABASE_INFO));
 end;
 
-function TIBSchemaTools.RunDiscoveryQuery(const AToolName, ASql, AParamName, AParamValue: string): string;
+function TIBMCPSchemaTools.RunDiscoveryQuery(const AToolName, ASql, AParamName, AParamValue: string): string;
 var
   Connection: TFDConnection;
   Query: TFDQuery;
@@ -157,7 +157,7 @@ var
   Stopwatch: TStopwatch;
 begin
   Stopwatch := TStopwatch.StartNew;
-  Connection := TIBConnectionManager.CreateConnection;
+  Connection := TIBMCPConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     Params := TJSONObject.Create;
@@ -170,7 +170,7 @@ begin
         if (AParamName <> '') and (AParamValue <> '') then
           Query.ParamByName(AParamName).AsString := AParamValue.ToUpperInvariant;
         Query.Open;
-        Result := TIBDatasetHelper.DatasetToJson(Query);
+        Result := TIBMCPDatasetHelper.DatasetToJson(Query);
         Stopwatch.Stop;
         FAudit.WriteToolCall(AToolName, Params.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
       except
@@ -189,7 +189,7 @@ begin
   end;
 end;
 
-function TIBSchemaTools.GetTriggers(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetTriggers(const Args: TJSONObject): TMCPToolResult;
 var
   TableName: string;
   Sql: string;
@@ -202,7 +202,7 @@ begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_triggers', Sql, 'table_name', TableName));
 end;
 
-function TIBSchemaTools.GetStoredProcedures(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetStoredProcedures(const Args: TJSONObject): TMCPToolResult;
 var
   NameFilter: string;
   Sql: string;
@@ -215,25 +215,24 @@ begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_stored_procedures', Sql, 'name_filter', NameFilter));
 end;
 
-function TIBSchemaTools.GetFunctions(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetFunctions(const Args: TJSONObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_functions', SQL_GET_FUNCTIONS));
 end;
 
-function TIBSchemaTools.GetExceptions(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetExceptions(const Args: TJSONObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_exceptions', SQL_GET_EXCEPTIONS));
 end;
 
-function TIBSchemaTools.GetGenerators(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetGenerators(const Args: TJSONObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_generators', SQL_GET_GENERATORS));
 end;
 
-function TIBSchemaTools.GetDomains(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetDomains(const Args: TJSONObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_domains', SQL_GET_DOMAINS));
 end;
 
 end.
-

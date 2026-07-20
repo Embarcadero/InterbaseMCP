@@ -1,4 +1,4 @@
-unit IB.AuditLogger;
+unit IB.MCP.AuditLogger;
 
 interface
 
@@ -10,7 +10,7 @@ type
   /// <summary>
   /// Writes audit events and tool calls.
   /// </summary>
-  TAuditLogger = class
+  TIBMCPAuditLogger = class
   private
     FSettings: TIBMCPSettings;
     FOwnsSettings: Boolean;
@@ -30,10 +30,10 @@ type
     /// <param name="AExecutionMs">Execution time in milliseconds.</param>
     /// <param name="AOutcome">Execution outcome.</param>
     procedure WriteToolCall(
-    const AToolName: string;
-    const AParameters: string;
-    AExecutionMs: Int64;
-    const AOutcome: string
+      const AToolName: string;
+      const AParameters: string;
+      AExecutionMs: Int64;
+      const AOutcome: string
     );
 
     /// <summary>
@@ -54,42 +54,42 @@ uses
   System.SysUtils,
   Dext.Threading.Async;
 
-  { TAuditLogger }
+  { TIBMCPAuditLogger }
 
-constructor TAuditLogger.Create;
+constructor TIBMCPAuditLogger.Create;
 begin
   inherited Create;
   FSettings := TIBMCPSettings.Create;
   FOwnsSettings := True;
 end;
 
-destructor TAuditLogger.Destroy;
+destructor TIBMCPAuditLogger.Destroy;
 begin
   if FOwnsSettings then
     FSettings.Free;
   inherited Destroy;
 end;
 
-procedure TAuditLogger.AppendLine(const ALine: string);
+procedure TIBMCPAuditLogger.AppendLine(const ALine: string);
 var
   FileName: string;
 begin
   FileName := ChangeFileExt(FSettings.AuditPath, '.' + FormatDateTime('yyyymmdd', Today) + '.jsonl');
   TAsyncTask
-  .Run(
-  procedure
-  var
-  DirectoryName: string;
-  begin
-    DirectoryName := ExtractFilePath(TPath.GetFullPath(FileName));
-    if DirectoryName <> '' then
-      TDirectory.CreateDirectory(DirectoryName);
-    TFile.AppendAllText(FileName, ALine + sLineBreak, TEncoding.UTF8);
-  end)
-  .Start;
+    .Run(
+      procedure
+      var
+        DirectoryName: string;
+      begin
+        DirectoryName := ExtractFilePath(TPath.GetFullPath(FileName));
+        if DirectoryName <> '' then
+          TDirectory.CreateDirectory(DirectoryName);
+        TFile.AppendAllText(FileName, ALine + sLineBreak, TEncoding.UTF8);
+      end)
+    .Start;
 end;
 
-class function TAuditLogger.RedactCredentials(const AText: string): string;
+class function TIBMCPAuditLogger.RedactCredentials(const AText: string): string;
 var
   ResultText: string;
   Key: string;
@@ -100,12 +100,12 @@ begin
   Result := ResultText;
 end;
 
-procedure TAuditLogger.WriteEvent(const AEventName, APayload: string);
+procedure TIBMCPAuditLogger.WriteEvent(const AEventName, APayload: string);
 begin
   WriteToolCall(AEventName, APayload, 0, 'event');
 end;
 
-procedure TAuditLogger.WriteToolCall(const AToolName, AParameters: string; AExecutionMs: Int64; const AOutcome: string);
+procedure TIBMCPAuditLogger.WriteToolCall(const AToolName, AParameters: string; AExecutionMs: Int64; const AOutcome: string);
 var
   Json: TJSONObject;
 begin
@@ -123,4 +123,3 @@ begin
 end;
 
 end.
-

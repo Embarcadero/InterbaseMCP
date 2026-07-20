@@ -1,4 +1,4 @@
-unit IB.ConnectionManager;
+unit IB.MCP.ConnectionManager;
 
 interface
 
@@ -9,7 +9,7 @@ type
   /// <summary>
   /// Factory for InterBase FireDAC connections.
   /// </summary>
-  TIBConnectionManager = class
+  TIBMCPConnectionManager = class
   private
     class var FInitialized: Boolean;
     class var FLock: TObject;
@@ -47,20 +47,20 @@ uses
 const
   CConnectionDefName = 'IB_MCP_CONNECTION';
 
-  { TIBConnectionManager }
+  { TIBMCPConnectionManager }
 
-  class constructor TIBConnectionManager.CreateClass;
+class constructor TIBMCPConnectionManager.CreateClass;
 begin
   inherited;
   FLock := TObject.Create;
 end;
 
-class destructor TIBConnectionManager.DestroyClass;
+class destructor TIBMCPConnectionManager.DestroyClass;
 begin
   FLock.Free;
 end;
 
-class procedure TIBConnectionManager.ConfigureConnection(AConnection: TFDConnection);
+class procedure TIBMCPConnectionManager.ConfigureConnection(AConnection: TFDConnection);
 begin
   Initialize;
   AConnection.LoginPrompt := False;
@@ -68,7 +68,7 @@ begin
   AConnection.ConnectionDefName := ConnectionDefName;
 end;
 
-class procedure TIBConnectionManager.ConfigureConnectionDef;
+class procedure TIBMCPConnectionManager.ConfigureConnectionDef;
 var
   LParams: TStringList;
   LSettings: TIBMCPSettings;
@@ -98,12 +98,12 @@ begin
   end;
 end;
 
-class function TIBConnectionManager.ConnectionDefName: string;
+class function TIBMCPConnectionManager.ConnectionDefName: string;
 begin
   Result := CConnectionDefName;
 end;
 
-class function TIBConnectionManager.CreateConnection: TFDConnection;
+class function TIBMCPConnectionManager.CreateConnection: TFDConnection;
 begin
   Result := TFDConnection.Create(nil);
   try
@@ -115,7 +115,7 @@ begin
   end;
 end;
 
-class function TIBConnectionManager.EffectivePoolMaximum(const APoolSize, APoolMaxSize: Integer): Integer;
+class function TIBMCPConnectionManager.EffectivePoolMaximum(const APoolSize, APoolMaxSize: Integer): Integer;
 begin
   Result := APoolMaxSize;
   if Result <= 0 then
@@ -124,7 +124,7 @@ begin
     Result := 10;
 end;
 
-class procedure TIBConnectionManager.Initialize;
+class procedure TIBMCPConnectionManager.Initialize;
 begin
   TMonitor.Enter(FLock);
   try
@@ -138,7 +138,7 @@ begin
   end;
 end;
 
-class procedure TIBConnectionManager.ValidateConnection;
+class procedure TIBMCPConnectionManager.ValidateConnection;
 var
   LConnection: TFDConnection;
 begin
@@ -151,4 +151,3 @@ begin
 end;
 
 end.
-

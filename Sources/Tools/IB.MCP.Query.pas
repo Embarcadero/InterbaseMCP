@@ -1,4 +1,4 @@
-unit IB.Tools.Query;
+unit IB.MCP.Query;
 
 interface
 
@@ -8,18 +8,18 @@ uses
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
   Dext.AI.MCP.Types,
-  IB.ConnectionManager,
-  IB.SqlValidator,
-  IB.AuditLogger;
+  IB.MCP.ConnectionManager,
+  IB.MCP.SqlValidator,
+  IB.MCP.AuditLogger;
 
 type
   /// <summary>
   /// MCP tools for SQL execution and plans.
   /// </summary>
-  TIBQueryTools = class(TMCPToolProvider)
+  TIBMCPQueryTools = class(TMCPToolProvider)
   private
-    FValidator: TSqlValidator;
-    FAudit: TAuditLogger;
+    FValidator: TIBMCPSqlValidator;
+    FAudit: TIBMCPAuditLogger;
     FOwnsValidator: Boolean;
     FOwnsAudit: Boolean;
 
@@ -52,20 +52,20 @@ uses
   FireDAC.Comp.Client,
   FireDAC.Phys.IBWrapper,
   FireDAC.Stan.Param,
-  IB.DatasetHelper;
+  IB.MCP.DatasetHelper;
 
-  { TIBQueryTools }
+  { TIBMCPQueryTools }
 
-constructor TIBQueryTools.Create;
+constructor TIBMCPQueryTools.Create;
 begin
   inherited Create;
-  FValidator := TSqlValidator.Create;
+  FValidator := TIBMCPSqlValidator.Create;
   FOwnsValidator := True;
-  FAudit := TAuditLogger.Create;
+  FAudit := TIBMCPAuditLogger.Create;
   FOwnsAudit := True;
 end;
 
-destructor TIBQueryTools.Destroy;
+destructor TIBMCPQueryTools.Destroy;
 begin
   if FOwnsAudit then
     FAudit.Free;
@@ -74,13 +74,13 @@ begin
   inherited Destroy;
 end;
 
-function TIBQueryTools.ExecuteDatasetJson(const ASql: string; const AParams: TJSONObject; AMaxRows: Integer): string;
+function TIBMCPQueryTools.ExecuteDatasetJson(const ASql: string; const AParams: TJSONObject; AMaxRows: Integer): string;
 var
   Connection: TFDConnection;
   Query: TFDQuery;
   Pair: TJSONPair;
 begin
-  Connection := TIBConnectionManager.CreateConnection;
+  Connection := TIBMCPConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     Query.Connection := Connection;
@@ -89,20 +89,20 @@ begin
       for Pair in AParams do
         Query.ParamByName(Pair.JsonString.Value).Value := Pair.JsonValue.Value;
     Query.Open;
-    Result := TIBDatasetHelper.DatasetToJson(Query);
+    Result := TIBMCPDatasetHelper.DatasetToJson(Query);
   finally
     Query.Free;
     Connection.Free;
   end;
 end;
 
-function TIBQueryTools.ExecuteProcedure(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPQueryTools.ExecuteProcedure(const Args: TJSONObject): TMCPToolResult;
 var
   Params: TJSONObject;
   ProcName: string;
   Sql: string;
   Stopwatch: TStopwatch;
-  Validation: TSqlValidationResult;
+  Validation: TIBMCPSqlValidationResult;
 begin
   ProcName := Args.GetValue<string>('proc_name', '').Trim;
   Params := Args.GetValue<TJSONObject>('params');
@@ -125,12 +125,12 @@ begin
   end;
 end;
 
-function TIBQueryTools.ExecuteSql(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPQueryTools.ExecuteSql(const Args: TJSONObject): TMCPToolResult;
 var
   Sql: string;
   MaxRows: Integer;
   Stopwatch: TStopwatch;
-  Validation: TSqlValidationResult;
+  Validation: TIBMCPSqlValidationResult;
 begin
   Sql := Args.GetValue<string>('sql', '');
   MaxRows := Args.GetValue<Integer>('max_rows', 200);
@@ -152,7 +152,7 @@ begin
   end;
 end;
 
-function TIBQueryTools.ExplainPlan(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPQueryTools.ExplainPlan(const Args: TJSONObject): TMCPToolResult;
 var
   ExecutionPlan: string;
   Json: TJSONObject;
@@ -161,7 +161,7 @@ var
   Statement: TIBStatement;
   Sql: string;
   Stopwatch: TStopwatch;
-  Validation: TSqlValidationResult;
+  Validation: TIBMCPSqlValidationResult;
 begin
   Sql := Args.GetValue<string>('sql', '');
   Validation := FValidator.ValidateSql(Sql, False);
@@ -169,7 +169,7 @@ begin
     Exit(TMCPToolResult.Error(Validation.Reason));
 
   Stopwatch := TStopwatch.StartNew;
-  Connection := TIBConnectionManager.CreateConnection;
+  Connection := TIBMCPConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     try
@@ -208,4 +208,3 @@ begin
 end;
 
 end.
-

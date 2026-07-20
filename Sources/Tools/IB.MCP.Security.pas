@@ -1,4 +1,4 @@
-unit IB.Tools.Security;
+unit IB.MCP.Security;
 
 interface
 
@@ -9,19 +9,19 @@ uses
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
   Dext.AI.MCP.Types,
-  IB.ConnectionManager,
-  IB.SqlValidator,
-  IB.AuditLogger,
+  IB.MCP.ConnectionManager,
+  IB.MCP.SqlValidator,
+  IB.MCP.AuditLogger,
   IB.MCP.Settings;
 
 type
   /// <summary>
   /// MCP tools for security and audit access.
   /// </summary>
-  TIBSecurityTools = class(TMCPToolProvider)
+  TIBMCPSecurityTools = class(TMCPToolProvider)
   private
-    FValidator: TSqlValidator;
-    FAudit: TAuditLogger;
+    FValidator: TIBMCPSqlValidator;
+    FAudit: TIBMCPAuditLogger;
     FSettings: TIBMCPSettings;
     FOwnsValidator: Boolean;
     FOwnsAudit: Boolean;
@@ -63,19 +63,21 @@ uses
   System.SysUtils,
   FireDAC.Comp.Client,
   FireDAC.Stan.Param,
-  IB.DatasetHelper;
+  IB.MCP.DatasetHelper;
 
-constructor TIBSecurityTools.Create;
+  { TIBMCPSecurityTools }
+
+constructor TIBMCPSecurityTools.Create;
 begin
   inherited Create;
   FSettings := TIBMCPSettings.Create;
-  FValidator := TSqlValidator.Create;
+  FValidator := TIBMCPSqlValidator.Create;
   FOwnsValidator := True;
-  FAudit := TAuditLogger.Create;
+  FAudit := TIBMCPAuditLogger.Create;
   FOwnsAudit := True;
 end;
 
-destructor TIBSecurityTools.Destroy;
+destructor TIBMCPSecurityTools.Destroy;
 begin
   if FOwnsAudit then
     FAudit.Free;
@@ -85,12 +87,12 @@ begin
   inherited Destroy;
 end;
 
-function TIBSecurityTools.QueryJson(const ASql, AParamName, AParamValue: string): string;
+function TIBMCPSecurityTools.QueryJson(const ASql, AParamName, AParamValue: string): string;
 var
   Connection: TFDConnection;
   Query: TFDQuery;
 begin
-  Connection := TIBConnectionManager.CreateConnection;
+  Connection := TIBMCPConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     Query.Connection := Connection;
@@ -98,17 +100,17 @@ begin
     if (AParamName <> '') and (AParamValue <> '') then
       Query.ParamByName(AParamName).AsString := AParamValue.ToUpperInvariant;
     Query.Open;
-    Result := TIBDatasetHelper.DatasetToJson(Query);
+    Result := TIBMCPDatasetHelper.DatasetToJson(Query);
   finally
     Query.Free;
     Connection.Free;
   end;
 end;
 
-function TIBSecurityTools.ValidateSql(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSecurityTools.ValidateSql(const Args: TJSONObject): TMCPToolResult;
 var
   Json: TJSONObject;
-  Validation: TSqlValidationResult;
+  Validation: TIBMCPSqlValidationResult;
 begin
   Validation := FValidator.ValidateSql(Args.GetValue<string>('sql', ''), Args.GetValue<Boolean>('allow_writes', False));
   Json := TJSONObject.Create;
@@ -122,18 +124,18 @@ begin
   end;
 end;
 
-function TIBSecurityTools.GetUserPrivileges(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSecurityTools.GetUserPrivileges(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result :=
-    TMCPToolResult.Text(QueryJson(SQL_GET_USER_PRIVILEGES, 'user_name', Args.GetValue<string>('user_name', '')));
+      TMCPToolResult.Text(QueryJson(SQL_GET_USER_PRIVILEGES, 'user_name', Args.GetValue<string>('user_name', '')));
   except
     on E: Exception do
       Result := TMCPToolResult.Error(E.Message);
   end;
 end;
 
-function TIBSecurityTools.ListRoles(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSecurityTools.ListRoles(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_LIST_ROLES));
@@ -143,7 +145,7 @@ begin
   end;
 end;
 
-function TIBSecurityTools.GetRoleMembers(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSecurityTools.GetRoleMembers(const Args: TJSONObject): TMCPToolResult;
 var
   RoleName: string;
   Sql: string;
@@ -161,7 +163,7 @@ begin
   end;
 end;
 
-function TIBSecurityTools.GetAuditLog(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSecurityTools.GetAuditLog(const Args: TJSONObject): TMCPToolResult;
 var
   FileName: string;
   Lines: TStringList;
@@ -199,4 +201,3 @@ begin
 end;
 
 end.
-

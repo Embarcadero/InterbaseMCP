@@ -1,4 +1,4 @@
-unit IB.Tools.Performance;
+unit IB.MCP.Statistics;
 
 interface
 
@@ -7,13 +7,13 @@ uses
   Dext.AI.MCP.Attributes,
   Dext.AI.MCP.Tools,
   Dext.AI.MCP.Types,
-  IB.ConnectionManager;
+  IB.MCP.ConnectionManager;
 
 type
   /// <summary>
   /// MCP tools for InterBase statistics views.
   /// </summary>
-  TIBStatisticsTools = class(TMCPToolProvider)
+  TIBMCPStatisticsTools = class(TMCPToolProvider)
   private
     function QueryJson(const ASql: string; AMaxRows: Integer = 1000): string;
   public
@@ -58,32 +58,34 @@ implementation
 uses
   System.SysUtils,
   FireDAC.Comp.Client,
-  IB.DatasetHelper;
+  IB.MCP.DatasetHelper;
 
-constructor TIBStatisticsTools.Create;
+  { TIBMCPStatisticsTools }
+
+constructor TIBMCPStatisticsTools.Create;
 begin
   inherited Create;
 end;
 
-function TIBStatisticsTools.QueryJson(const ASql: string; AMaxRows: Integer): string;
+function TIBMCPStatisticsTools.QueryJson(const ASql: string; AMaxRows: Integer): string;
 var
   Connection: TFDConnection;
   Query: TFDQuery;
 begin
-  Connection := TIBConnectionManager.CreateConnection;
+  Connection := TIBMCPConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     Query.Connection := Connection;
     Query.SQL.Text := ASql;
     Query.Open;
-    Result := TIBDatasetHelper.DatasetToJson(Query);
+    Result := TIBMCPDatasetHelper.DatasetToJson(Query);
   finally
     Query.Free;
     Connection.Free;
   end;
 end;
 
-function TIBStatisticsTools.StatAttachments(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatAttachments(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_ATTACHMENTS));
@@ -93,7 +95,7 @@ begin
   end;
 end;
 
-function TIBStatisticsTools.StatDatabase(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatDatabase(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_DATABASE));
@@ -103,7 +105,7 @@ begin
   end;
 end;
 
-function TIBStatisticsTools.StatHeaps(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatHeaps(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_HEAPS));
@@ -113,7 +115,7 @@ begin
   end;
 end;
 
-function TIBStatisticsTools.StatIndices(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatIndices(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_INDICES));
@@ -123,7 +125,7 @@ begin
   end;
 end;
 
-function TIBStatisticsTools.StatPoolBlocks(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatPoolBlocks(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_POOL_BLOCKS));
@@ -133,7 +135,7 @@ begin
   end;
 end;
 
-function TIBStatisticsTools.StatPools(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatPools(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_POOLS));
@@ -143,7 +145,7 @@ begin
   end;
 end;
 
-function TIBStatisticsTools.StatProcedures(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatProcedures(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_PROCEDURES));
@@ -153,7 +155,7 @@ begin
   end;
 end;
 
-function TIBStatisticsTools.StatRelations(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatRelations(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_RELATIONS));
@@ -163,7 +165,7 @@ begin
   end;
 end;
 
-function TIBStatisticsTools.StatStatements(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatStatements(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_STATEMENTS));
@@ -173,7 +175,7 @@ begin
   end;
 end;
 
-function TIBStatisticsTools.StatTransactions(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatTransactions(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_TRANSACTIONS));
@@ -183,7 +185,7 @@ begin
   end;
 end;
 
-function TIBStatisticsTools.StatTriggers(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatTriggers(const Args: TJSONObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_TRIGGERS));

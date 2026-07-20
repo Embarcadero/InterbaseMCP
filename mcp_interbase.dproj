@@ -223,14 +223,15 @@
         </DelphiCompile>
         <DCCReference Include="Sources\App\IB.MCP.App.pas"/>
         <DCCReference Include="Sources\Config\IB.MCP.Settings.pas"/>
-        <DCCReference Include="Sources\Services\IB.SqlValidator.pas"/>
-        <DCCReference Include="Sources\Services\IB.AuditLogger.pas"/>
-        <DCCReference Include="Sources\Services\IB.DatasetHelper.pas"/>
-        <DCCReference Include="Sources\Tools\IB.Tools.Query.pas"/>
-        <DCCReference Include="Sources\Tools\IB.Tools.Schema.pas"/>
-        <DCCReference Include="Sources\Tools\IB.Tools.Performance.pas"/>
-        <DCCReference Include="Sources\Tools\IB.Tools.Security.pas"/>
-        <DCCReference Include="Sources\Services\IB.ConnectionManager.pas"/>
+        <DCCReference Include="Sources\Services\IB.MCP.SqlValidator.pas"/>
+        <DCCReference Include="Sources\Services\IB.MCP.AuditLogger.pas"/>
+        <DCCReference Include="Sources\Services\IB.MCP.DatasetHelper.pas"/>
+        <DCCReference Include="Sources\Tools\IB.MCP.Query.pas"/>
+        <DCCReference Include="Sources\Tools\IB.MCP.Schema.pas"/>
+        <DCCReference Include="Sources\Tools\IB.MCP.Statistics.pas"/>
+        <DCCReference Include="Sources\Tools\IB.MCP.Security.pas"/>
+        <DCCReference Include="Sources\Services\IB.MCP.ConnectionManager.pas"/>
+        <DCCReference Include="Sources\Tools\IB.MCP.Management.pas"/>
         <None Include="mcp_interbase.ini"/>
         <None Include="README.md"/>
         <BuildConfiguration Include="Base">
@@ -328,6 +329,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="mcp_interbase.ini" Configuration="Release" Class="ProjectFile"/>
+                <DeployFile LocalName="mcp_interbase.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>mcp_interbase.rsm</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="mcp_interbase" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Linux64">
                         <RemoteName>mcp_interbase</RemoteName>

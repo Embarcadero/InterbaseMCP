@@ -7,14 +7,15 @@ program mcp_interbase;
 uses
   IB.MCP.App in 'Sources\App\IB.MCP.App.pas',
   IB.MCP.Settings in 'Sources\Config\IB.MCP.Settings.pas',
-  IB.SqlValidator in 'Sources\Services\IB.SqlValidator.pas',
-  IB.AuditLogger in 'Sources\Services\IB.AuditLogger.pas',
-  IB.DatasetHelper in 'Sources\Services\IB.DatasetHelper.pas',
-  IB.Tools.Query in 'Sources\Tools\IB.Tools.Query.pas',
-  IB.Tools.Schema in 'Sources\Tools\IB.Tools.Schema.pas',
-  IB.Tools.Performance in 'Sources\Tools\IB.Tools.Performance.pas',
-  IB.Tools.Security in 'Sources\Tools\IB.Tools.Security.pas',
-  IB.ConnectionManager in 'Sources\Services\IB.ConnectionManager.pas';
+  IB.MCP.SqlValidator in 'Sources\Services\IB.MCP.SqlValidator.pas',
+  IB.MCP.AuditLogger in 'Sources\Services\IB.MCP.AuditLogger.pas',
+  IB.MCP.DatasetHelper in 'Sources\Services\IB.MCP.DatasetHelper.pas',
+  IB.MCP.Query in 'Sources\Tools\IB.MCP.Query.pas',
+  IB.MCP.Schema in 'Sources\Tools\IB.MCP.Schema.pas',
+  IB.MCP.Statistics in 'Sources\Tools\IB.MCP.Statistics.pas',
+  IB.MCP.Security in 'Sources\Tools\IB.MCP.Security.pas',
+  IB.MCP.ConnectionManager in 'Sources\Services\IB.MCP.ConnectionManager.pas',
+  IB.MCP.Management in 'Sources\Tools\IB.MCP.Management.pas';
 
 begin
   TIBMCPApp.Run;

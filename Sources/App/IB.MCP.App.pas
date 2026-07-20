@@ -23,11 +23,12 @@ uses
   Dext.Web.Interfaces,
   Dext.Server.Engine.Types,
   IB.MCP.Settings,
-  IB.ConnectionManager,
-  IB.Tools.Query,
-  IB.Tools.Schema,
-  IB.Tools.Performance,
-  IB.Tools.Security;
+  IB.MCP.ConnectionManager,
+  IB.MCP.Query,
+  IB.MCP.Schema,
+  IB.MCP.Statistics,
+  IB.MCP.Security,
+  IB.MCP.Management;
 
   { TIBMCPApp }
 
@@ -37,8 +38,8 @@ var
   Server: TMCPServer;
   ServerUrl: string;
 begin
-  TIBConnectionManager.Initialize;
-  TIBConnectionManager.ValidateConnection;
+  TIBMCPConnectionManager.Initialize;
+  TIBMCPConnectionManager.ValidateConnection;
 
   Settings := TIBMCPSettings.Create;
   try
@@ -46,10 +47,11 @@ begin
 
     Server := TMCPServer.Create('mcp-interbase', '0.1.0');
     try
-      Server.RegisterProvider(TIBQueryTools.Create);
-      Server.RegisterProvider(TIBSchemaTools.Create);
-      Server.RegisterProvider(TIBSecurityTools.Create);
-      Server.RegisterProvider(TIBStatisticsTools.Create);
+      Server.RegisterProvider(TIBMCPQueryTools.Create);
+      Server.RegisterProvider(TIBMCPSchemaTools.Create);
+      Server.RegisterProvider(TIBMCPSecurityTools.Create);
+      Server.RegisterProvider(TIBMCPStatisticsTools.Create);
+      Server.RegisterProvider(TIBMCPManagementTools.Create);
 
       if not Settings.MCPSecret.IsEmpty then
         Server.ConfigureApp(procedure(App: IApplicationBuilder)
