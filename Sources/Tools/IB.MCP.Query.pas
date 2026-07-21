@@ -125,7 +125,7 @@ begin
 
   Stopwatch := TStopwatch.StartNew;
   try
-    if FValidator.ReturnsCursor(Sql) then
+    if FValidator.IsViewStatement(Sql) then
       Result := TMCPToolResult.Text(ExecDataset(Sql, nil))
     else
       Result := TMCPToolResult.Text(ExecStatement(Sql));

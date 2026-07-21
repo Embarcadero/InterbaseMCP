@@ -42,10 +42,16 @@ type
     destructor Destroy; override;
 
     /// <summary>
-    /// Returns True when the SQL statement produces a result-set cursor.
-    /// Recognised cursor forms: SELECT, EXECUTE PROCEDURE, EXECUTE BLOCK.
+    /// Returns True when the SQL statement produces a result-set cursor (SELECT).
     /// </summary>
     function ReturnsCursor(const ASql: string): Boolean;
+
+    /// <summary>True when the SQL is a VIEW-level statement (SELECT).</summary>
+    function IsViewStatement(const ASql: string): Boolean;
+    /// <summary>True when the SQL is a CRUD-level statement (INSERT,UPDATE,DELETE,TRUNCATE).</summary>
+    function IsCrudStatement(const ASql: string): Boolean;
+    /// <summary>True when the SQL is a DBA-level statement (CREATE,ALTER,DROP,GRANT,REVOKE,SET).</summary>
+    function IsDbaStatement(const ASql: string): Boolean;
 
     /// <summary>
     /// Validates a SQL statement against the configured ForbiddenDML and
@@ -119,12 +125,34 @@ begin
   end;
 end;
 
-function TIBMCPSqlValidator.ReturnsCursor(const ASql: string): Boolean;
+function TIBMCPSqlValidator.IsViewStatement(const ASql: string): Boolean;
 var
   Sql: string;
 begin
   Sql := Trim(ASql).ToUpperInvariant;
   Result := Sql.StartsWith('SELECT');
+end;
+
+function TIBMCPSqlValidator.IsCrudStatement(const ASql: string): Boolean;
+var
+  Sql: string;
+begin
+  Sql := Trim(ASql).ToUpperInvariant;
+  Result := Sql.StartsWith('INSERT') or Sql.StartsWith('UPDATE') or Sql.StartsWith('DELETE') or Sql.StartsWith('TRUNCATE');
+end;
+
+function TIBMCPSqlValidator.IsDbaStatement(const ASql: string): Boolean;
+var
+  Sql: string;
+begin
+  Sql := Trim(ASql).ToUpperInvariant;
+  Result := Sql.StartsWith('CREATE') or Sql.StartsWith('ALTER') or Sql.StartsWith('DROP') or Sql.StartsWith('GRANT') or Sql.StartsWith('REVOKE') or Sql.StartsWith('SET');
+end;
+
+function TIBMCPSqlValidator.ReturnsCursor(const ASql: string): Boolean;
+begin
+  // Keep ReturnsCursor for compatibility; currently only SELECT returns a cursor
+  Result := IsViewStatement(ASql);
 end;
 
 function TIBMCPSqlValidator.ValidateSql(const ASql: string): TIBMCPSqlValidationResult;
