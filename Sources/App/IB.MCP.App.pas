@@ -2,12 +2,37 @@ unit IB.MCP.App;
 
 interface
 
+uses
+  IB.MCP.AuditLogger,
+  IB.MCP.ConnectionManager,
+  IB.MCP.Settings,
+  IB.MCP.SqlValidator;
+
 type
   /// <summary>
   /// Application entry point for the InterBase MCP server.
   /// </summary>
   TIBMCPApp = class
+  strict private
+    FSettings: TIBMCPSettings;
+    FAuditLogger: TIBMCPAuditLogger;
+    FConnectionManager: TIBMCPConnectionManager;
+    FSqlValidator: TIBMCPSqlValidator;
+    FUserLevel: TUserLevel;
+    function GetServerUrl: string;
+    class var FCurrent: TIBMCPApp;
   public
+    constructor Create;
+    destructor Destroy; override;
+
+    class function Current: TIBMCPApp; static;
+
+    property Settings: TIBMCPSettings read FSettings;
+    property AuditLogger: TIBMCPAuditLogger read FAuditLogger;
+    property ConnectionManager: TIBMCPConnectionManager read FConnectionManager;
+    property SqlValidator: TIBMCPSqlValidator read FSqlValidator;
+    property UserLevel: TUserLevel read FUserLevel write FUserLevel;
+
     /// <summary>
     /// Starts the MCP server (HTTP or HTTPS depending on UseHttps setting)
     /// and blocks until the user presses ENTER.
@@ -18,36 +43,57 @@ type
 implementation
 
 uses
-  System.Classes,
   System.SysUtils,
   Dext.AI.MCP.Server,
   Dext.Web.Interfaces,
   Dext.Server.Engine.Types,
-  IB.MCP.Settings,
-  IB.MCP.ConnectionManager,
   IB.MCP.Query,
   IB.MCP.Schema,
   IB.MCP.Statistics,
   IB.MCP.Security,
   IB.MCP.Management;
 
-  { TIBMCPApp }
-
-  class procedure TIBMCPApp.Run;
-var
-  Settings: TIBMCPSettings;
-  Server: TMCPServer;
-  ServerUrl: string;
+constructor TIBMCPApp.Create;
 begin
-  TIBMCPConnectionManager.Initialize;
-  TIBMCPConnectionManager.ValidateConnection;
+  inherited Create;
+  FSettings := TIBMCPSettings.Create;
+  FAuditLogger := TIBMCPAuditLogger.Create;
+  FConnectionManager := TIBMCPConnectionManager.Create(FSettings);
+  FSqlValidator := TIBMCPSqlValidator.Create;
+end;
 
-  Settings := TIBMCPSettings.Create;
+destructor TIBMCPApp.Destroy;
+begin
+  FSqlValidator.Free;
+  FConnectionManager.Free;
+  FAuditLogger.Free;
+  FSettings.Free;
+  inherited Destroy;
+end;
+
+class function TIBMCPApp.Current: TIBMCPApp;
+begin
+  Result := FCurrent;
+end;
+
+function TIBMCPApp.GetServerUrl: string;
+begin
+  if FSettings.UseHttps then
+    Result := Format('https://%s:%d', [FSettings.MCPHost, FSettings.MCPPort])
+  else
+    Result := Format('http://%s:%d', [FSettings.MCPHost, FSettings.MCPPort]);
+end;
+
+class procedure TIBMCPApp.Run;
+var
+  App: TIBMCPApp;
+  Server: TMCPServer;
+begin
+  App := TIBMCPApp.Create;
+  FCurrent := App;
   try
-    if Settings.UseHttps then
-      ServerUrl := Format('https://%s:%d', [Settings.MCPHost, Settings.MCPPort])
-    else
-      ServerUrl := Format('http://%s:%d', [Settings.MCPHost, Settings.MCPPort]);
+    App.ConnectionManager.Initialize;
+    App.ConnectionManager.ValidateConnection;
 
     Server := TMCPServer.Create('mcp-interbase', '0.1.0');
     try
@@ -57,27 +103,28 @@ begin
       Server.RegisterProvider(TIBMCPStatisticsTools.Create);
       Server.RegisterProvider(TIBMCPManagementTools.Create);
 
-      if not Settings.MCPSecret.IsEmpty then
-        Server.ConfigureApp(procedure(App: IApplicationBuilder)
+      Server.ConfigureApp(procedure(AppBuilder: IApplicationBuilder)
+      begin
+        AppBuilder.Use(
+        procedure(Context: IHttpContext; Next: TRequestDelegate)
+        var
+          ProvidedToken: string;
         begin
-          App.Use(
-          procedure(Context: IHttpContext; Next: TRequestDelegate)
+          ProvidedToken := Context.Request.GetHeader('Authorization');
+          App.UserLevel := App.Settings.GetUserLevel(ProvidedToken);
+          if App.UserLevel = [] then
           begin
-            var ProvidedToken := Context.Request.GetHeader('Authorization');
-            if ProvidedToken <> Settings.MCPSecret then
-              begin
-                Context.Response.StatusCode := 401; // HTTP 401 Unauthorized
-                Context.Response.Write('Unauthorized: Invalid Shared Token');
-                Exit;
-              end;
-            Next(Context);
-          end
-          );
+            Context.Response.StatusCode := 401;
+            Context.Response.Write('Unauthorized: Invalid Shared Token');
+            Exit;
+          end;
+          Next(Context);
         end);
+      end);
 
-      Server.Run(mtStreamable, ServerUrl);
+      Server.Run(mtStreamable, App.GetServerUrl);
 
-      Writeln(Format('mcp-interbase listening at %s/mcp', [ServerUrl]));
+      Writeln(Format('mcp-interbase listening at %s/mcp', [App.GetServerUrl]));
       Writeln('Press ENTER to stop the process and shut down the server.');
       ReadLn;
     finally
@@ -85,10 +132,9 @@ begin
       Server.Free;
     end;
   finally
-    Settings.Free;
+    FCurrent := nil;
+    App.Free;
   end;
 end;
 
 end.
-
-

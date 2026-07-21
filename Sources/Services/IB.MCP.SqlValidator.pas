@@ -31,8 +31,6 @@ type
   TIBMCPSqlValidator = class
   private
     FSettings: TIBMCPSettings;
-    FOwnsSettings: Boolean;
-    FEmaByTool: TDictionary<string, Double>;
 
     /// <summary>Returns True when ASql contains a keyword forbidden by ForbiddenDML or ForbiddenDDL settings.</summary>
     function HasForbiddenKeyword(const ASql: string; out AKeyword: string): Boolean;
@@ -40,11 +38,6 @@ type
     /// <summary>Creates the validator, loading settings from mcp_interbase.ini.</summary>
     constructor Create; overload;
     destructor Destroy; override;
-
-    /// <summary>
-    /// Returns True when the SQL statement produces a result-set cursor (SELECT).
-    /// </summary>
-    function ReturnsCursor(const ASql: string): Boolean;
 
     /// <summary>True when the SQL is a VIEW-level statement (SELECT).</summary>
     function IsViewStatement(const ASql: string): Boolean;
@@ -88,15 +81,11 @@ constructor TIBMCPSqlValidator.Create;
 begin
   inherited Create;
   FSettings := TIBMCPSettings.Create;
-  FOwnsSettings := True;
-  FEmaByTool := TDictionary<string, Double>.Create;
 end;
 
 destructor TIBMCPSqlValidator.Destroy;
 begin
-  FEmaByTool.Free;
-  if FOwnsSettings then
-    FSettings.Free;
+  FSettings.Free;
   inherited Destroy;
 end;
 
@@ -138,7 +127,10 @@ var
   Sql: string;
 begin
   Sql := Trim(ASql).ToUpperInvariant;
-  Result := Sql.StartsWith('INSERT') or Sql.StartsWith('UPDATE') or Sql.StartsWith('DELETE') or Sql.StartsWith('TRUNCATE');
+  Result := Sql.StartsWith('INSERT') or
+            Sql.StartsWith('UPDATE') or
+            Sql.StartsWith('DELETE') or
+            Sql.StartsWith('TRUNCATE');
 end;
 
 function TIBMCPSqlValidator.IsDbaStatement(const ASql: string): Boolean;
@@ -146,14 +138,14 @@ var
   Sql: string;
 begin
   Sql := Trim(ASql).ToUpperInvariant;
-  Result := Sql.StartsWith('CREATE') or Sql.StartsWith('ALTER') or Sql.StartsWith('DROP') or Sql.StartsWith('GRANT') or Sql.StartsWith('REVOKE') or Sql.StartsWith('SET');
+  Result := Sql.StartsWith('CREATE') or
+            Sql.StartsWith('ALTER') or
+            Sql.StartsWith('DROP') or
+            Sql.StartsWith('GRANT') or
+            Sql.StartsWith('REVOKE') or
+            Sql.StartsWith('SET');
 end;
 
-function TIBMCPSqlValidator.ReturnsCursor(const ASql: string): Boolean;
-begin
-  // Keep ReturnsCursor for compatibility; currently only SELECT returns a cursor
-  Result := IsViewStatement(ASql);
-end;
 
 function TIBMCPSqlValidator.ValidateSql(const ASql: string): TIBMCPSqlValidationResult;
 var
@@ -169,4 +161,5 @@ begin
 end;
 
 end.
+
 

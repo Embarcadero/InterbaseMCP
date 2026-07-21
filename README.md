@@ -75,31 +75,37 @@ Below is an overview of the required and optional parameters:
 
 ### `[MCPServer]`
 
-* **`MCPHost`** (Default: `localhost`): The hostname or IP address of the MCP server.
+* **`MCPHost`** (Default: `localhost`): The hostname or IP address the MCP server binds to.
 * **`MCPPort`** (Default: `5000`): The port the MCP server will listen on.
-* **`MCPSecret`** (Default: empty): The shared secret for secure communication (if required).
+* **`UseHttps`** (Default: `0`): Set to `1` to enable HTTPS on the MCP endpoint.
+* **`SslProvider`** (Default: `OpenSSL`): The SSL/TLS provider to use (e.g. `OpenSSL`).
+* **`SslCert`** (Default: `server.crt`): Path to the SSL certificate file.
+* **`SslKey`** (Default: `server.key`): Path to the SSL private key file.
+* **`SslRootCert`** (Default: empty): Path to the root/CA certificate file (optional).
 
 ### `[Database]`
 
 * **`Host`** (Default: `localhost`): The hostname or IP address of the InterBase server.
 * **`Port`** (Default: `3050`): The connection port.
-* **`Database`** (Default: `c:\data\employee.gdb`): The file path or alias of the InterBase database.
-* **`UserName`** (Default: `SYSDBA`): The username for authentication.
-* **`Password`** (Default: `masterkey`): The password for authentication.
+* **`Database`**: The file path or alias of the InterBase database.
+* **`UserName`**: The username for authentication.
+* **`Password`**: The password for authentication.
 * **`CharacterSet`** (Default: `UTF8`): The character set for the connection.
-
-### `[Pool]`
-
-* **`PoolSize`** (Default: `5`): Default number of connections in the connection pool.
-* **`PoolMinSize`** (Default: `1`): Minimum connections to keep alive.
-* **`PoolMaxSize`** (Default: `10`): Maximum connections allowed in the pool.
 
 ### `[Security]`
 
-* **`AllowWrites`** (Default: `False`): If set to `True`, the server will permit `INSERT`, `UPDATE`, and `DELETE` SQL commands via the `execute_sql` tool. By default, the server is strictly read-only for safety.
-* **`SSL`** (Default: `False`): Enable if the InterBase server requires a secure SSL connection.
-* **`DangerousKeywords`** (Default: `DROP,TRUNCATE,GRANT,REVOKE,ALTER USER,CREATE USER`): A comma-separated list of SQL keywords that the internal `TSqlValidator` will block regardless of the `AllowWrites` setting.
+**`ForbiddenDML`** (Default: `INSERT,UPDATE,DELETE,TRUNCATE`): Comma-separated list of blocked DML statements.
+
+**`ForbiddenDDL`** (Default: `CREATE,ALTER,DROP,GRANT,REVOKE,SET`): Comma-separated list of blocked DDL statements.
+
+**`VIEWSecret`**: Shared secret required to call read-only (VIEW-level) tools.
+
+**`CRUDSecret`**: Shared secret required to call write (CRUD-level) tools. 
+
+**`DBASecret`**: Shared secret required to call DBA-level tools (metadata changes, backup, restore, validate, sweep).
+
+⚠️ Empty Secret means no access control.
 
 ### `[Logging]`
 
-* **`AuditPath`** (Default: `logs/audit.jsonl`): The path where the server will write the tool execution audit logs. Logs are rotated daily.
+* **`AuditPath`** (Default: `logs/audit.jsonl`): The path where the server writes tool execution audit logs.

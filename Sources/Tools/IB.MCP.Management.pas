@@ -19,9 +19,8 @@ type
   private
     FSettings: TIBMCPSettings;
     FAudit: TIBMCPAuditLogger;
-    FOwnsAudit: Boolean;
     function BuildResult(const AOperation, AStatus: string; AElapsedMilliseconds: Int64;
-      ALogs: TJSONArray; const AErrorMessage: string = ''): TMCPToolResult;
+    ALogs: TJSONArray; const AErrorMessage: string = ''): TMCPToolResult;
   public
     constructor Create; overload;
     destructor Destroy; override;
@@ -67,6 +66,7 @@ uses
   FireDAC.Phys.IBBase,
   FireDAC.Phys.IBWrapper,
   FireDAC.Phys.IB,
+  IB.MCP.App,
   IB.MCP.DatasetHelper;
 
 type
@@ -95,16 +95,12 @@ end;
 constructor TIBMCPManagementTools.Create;
 begin
   inherited Create;
-  FSettings := TIBMCPSettings.Create;
-  FAudit := TIBMCPAuditLogger.Create;
-  FOwnsAudit := True;
+  FSettings := TIBMCPApp.Current.Settings;
+  FAudit := TIBMCPApp.Current.AuditLogger;
 end;
 
 destructor TIBMCPManagementTools.Destroy;
 begin
-  if FOwnsAudit then
-    FAudit.Free;
-  FSettings.Free;
   inherited Destroy;
 end;
 
@@ -147,6 +143,9 @@ var
   LReceiver: TServiceProgressReceiver;
   LStopwatch: TStopwatch;
 begin
+  if not(urDba in TIBMCPApp.Current.UserLevel) then
+    Exit(TMCPToolResult.Error('Forbidden: DBA access required'));
+
   LBackupFile := Args.GetValue<string>('backup_file', '');
   if LBackupFile = '' then
     Exit(TMCPToolResult.Error('Parameter backup_file is required.'));
@@ -181,17 +180,17 @@ begin
       end;
     except
       on E: Exception do
-      begin
-        LStopwatch.Stop;
-        LLogs.Add('Task failed: ' + E.Message);
-        FAudit.WriteToolCall('backup_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
-        LLogsJson := LogsToJSONArray(LLogs);
-        try
-          Result := BuildResult('backup_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
-        finally
-          LLogsJson.Free;
+        begin
+          LStopwatch.Stop;
+          LLogs.Add('Task failed: ' + E.Message);
+          FAudit.WriteToolCall('backup_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+          LLogsJson := LogsToJSONArray(LLogs);
+          try
+            Result := BuildResult('backup_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
+          finally
+            LLogsJson.Free;
+          end;
         end;
-      end;
     end;
   finally
     LBackup.Free;
@@ -213,6 +212,9 @@ var
   LReceiver: TServiceProgressReceiver;
   LStopwatch: TStopwatch;
 begin
+  if not(urDba in TIBMCPApp.Current.UserLevel) then
+    Exit(TMCPToolResult.Error('Forbidden: DBA access required'));
+
   LBackupFile := Args.GetValue<string>('backup_file', '');
   LTargetDatabase := Args.GetValue<string>('target_database', '');
   if LBackupFile = '' then
@@ -254,17 +256,17 @@ begin
       end;
     except
       on E: Exception do
-      begin
-        LStopwatch.Stop;
-        LLogs.Add('Task failed: ' + E.Message);
-        FAudit.WriteToolCall('restore_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
-        LLogsJson := LogsToJSONArray(LLogs);
-        try
-          Result := BuildResult('restore_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
-        finally
-          LLogsJson.Free;
+        begin
+          LStopwatch.Stop;
+          LLogs.Add('Task failed: ' + E.Message);
+          FAudit.WriteToolCall('restore_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+          LLogsJson := LogsToJSONArray(LLogs);
+          try
+            Result := BuildResult('restore_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
+          finally
+            LLogsJson.Free;
+          end;
         end;
-      end;
     end;
   finally
     LRestore.Free;
@@ -284,6 +286,9 @@ var
   LReceiver: TServiceProgressReceiver;
   LStopwatch: TStopwatch;
 begin
+  if not(urDba in TIBMCPApp.Current.UserLevel) then
+    Exit(TMCPToolResult.Error('Forbidden: DBA access required'));
+
   LRepair := Args.GetValue<Boolean>('repair', False);
 
   LLogs := TStringList.Create;
@@ -302,15 +307,15 @@ begin
       LValidate.OnProgress := LReceiver.OnProgress;
 
       if LRepair then
-      begin
-        LLogs.Add('Running database validation with repair option...');
-        LValidate.Repair;
-      end
+        begin
+          LLogs.Add('Running database validation with repair option...');
+          LValidate.Repair;
+        end
       else
-      begin
-        LLogs.Add('Running database validation (check only)...');
-        LValidate.CheckOnly;
-      end;
+        begin
+          LLogs.Add('Running database validation (check only)...');
+          LValidate.CheckOnly;
+        end;
 
       LStopwatch.Stop;
       LLogs.Add(Format('Task completed successfully in %d ms.', [LStopwatch.ElapsedMilliseconds]));
@@ -323,17 +328,17 @@ begin
       end;
     except
       on E: Exception do
-      begin
-        LStopwatch.Stop;
-        LLogs.Add('Task failed: ' + E.Message);
-        FAudit.WriteToolCall('validate_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
-        LLogsJson := LogsToJSONArray(LLogs);
-        try
-          Result := BuildResult('validate_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
-        finally
-          LLogsJson.Free;
+        begin
+          LStopwatch.Stop;
+          LLogs.Add('Task failed: ' + E.Message);
+          FAudit.WriteToolCall('validate_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+          LLogsJson := LogsToJSONArray(LLogs);
+          try
+            Result := BuildResult('validate_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
+          finally
+            LLogsJson.Free;
+          end;
         end;
-      end;
     end;
   finally
     LValidate.Free;
@@ -352,6 +357,9 @@ var
   LReceiver: TServiceProgressReceiver;
   LStopwatch: TStopwatch;
 begin
+  if not(urDba in TIBMCPApp.Current.UserLevel) then
+    Exit(TMCPToolResult.Error('Forbidden: DBA access required'));
+
   LLogs := TStringList.Create;
   LReceiver := TServiceProgressReceiver.Create(LLogs);
   LDriverLink := TFDPhysIBDriverLink.Create(nil);
@@ -380,17 +388,17 @@ begin
       end;
     except
       on E: Exception do
-      begin
-        LStopwatch.Stop;
-        LLogs.Add('Task failed: ' + E.Message);
-        FAudit.WriteToolCall('sweep_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
-        LLogsJson := LogsToJSONArray(LLogs);
-        try
-          Result := BuildResult('sweep_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
-        finally
-          LLogsJson.Free;
+        begin
+          LStopwatch.Stop;
+          LLogs.Add('Task failed: ' + E.Message);
+          FAudit.WriteToolCall('sweep_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+          LLogsJson := LogsToJSONArray(LLogs);
+          try
+            Result := BuildResult('sweep_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
+          finally
+            LLogsJson.Free;
+          end;
         end;
-      end;
     end;
   finally
     LValidate.Free;
@@ -401,3 +409,4 @@ begin
 end;
 
 end.
+

@@ -9,7 +9,6 @@ uses
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
   Dext.AI.MCP.Types,
-  IB.MCP.ConnectionManager,
   IB.MCP.SqlValidator,
   IB.MCP.AuditLogger,
   IB.MCP.Settings;
@@ -23,8 +22,6 @@ type
     FValidator: TIBMCPSqlValidator;
     FAudit: TIBMCPAuditLogger;
     FSettings: TIBMCPSettings;
-    FOwnsValidator: Boolean;
-    FOwnsAudit: Boolean;
     /// <summary>Executes a read-only discovery SQL statement and returns results as a JSON string.</summary>
     function QueryJson(const ASql: string; const AParamName: string = ''; const AParamValue: string = ''): string;
   public
@@ -59,6 +56,7 @@ uses
   System.SysUtils,
   FireDAC.Comp.Client,
   FireDAC.Stan.Param,
+  IB.MCP.App,
   IB.MCP.DatasetHelper;
 
   { TIBMCPSecurityTools }
@@ -66,20 +64,13 @@ uses
 constructor TIBMCPSecurityTools.Create;
 begin
   inherited Create;
-  FSettings := TIBMCPSettings.Create;
-  FValidator := TIBMCPSqlValidator.Create;
-  FOwnsValidator := True;
-  FAudit := TIBMCPAuditLogger.Create;
-  FOwnsAudit := True;
+  FSettings := TIBMCPApp.Current.Settings;
+  FValidator := TIBMCPApp.Current.SqlValidator;
+  FAudit := TIBMCPApp.Current.AuditLogger;
 end;
 
 destructor TIBMCPSecurityTools.Destroy;
 begin
-  if FOwnsAudit then
-    FAudit.Free;
-  if FOwnsValidator then
-    FValidator.Free;
-  FSettings.Free;
   inherited Destroy;
 end;
 
@@ -88,7 +79,7 @@ var
   Connection: TFDConnection;
   Query: TFDQuery;
 begin
-  Connection := TIBMCPConnectionManager.CreateConnection;
+  Connection := TIBMCPApp.Current.ConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     Query.Connection := Connection;

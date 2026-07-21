@@ -8,7 +8,6 @@ uses
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
   Dext.AI.MCP.Types,
-  IB.MCP.ConnectionManager,
   IB.MCP.SqlValidator,
   IB.MCP.AuditLogger,
   IB.MCP.Settings;
@@ -28,6 +27,9 @@ uses
       function ExecDataset(const ASql: string; const AParams: TJSONObject): string;
       /// <summary>Runs a non-cursor SQL statement and returns affected-row count as JSON.</summary>
       function ExecStatement(const ASql: string): string;
+      /// <summary>Execute a stored procedure that does not return a cursor.</summary>
+      function ExecProcedure(const AProcName: string; const AParams: TJSONObject): string;
+
     public
       constructor Create; overload;
 
@@ -55,6 +57,7 @@ uses
   FireDAC.Comp.Client,
   FireDAC.Phys.IBWrapper,
   FireDAC.Stan.Param,
+  IB.MCP.App,
   IB.MCP.DatasetHelper;
 
   { TIBMCPQueryTools }
@@ -62,16 +65,13 @@ uses
 constructor TIBMCPQueryTools.Create;
 begin
   inherited Create;
-  FValidator := TIBMCPSqlValidator.Create;
-  FSettings:= TIBMCPSettings.Create;
-  FAudit := TIBMCPAuditLogger.Create;
+  FValidator := TIBMCPApp.Current.SqlValidator;
+  FSettings := TIBMCPApp.Current.Settings;
+  FAudit := TIBMCPApp.Current.AuditLogger;
 end;
 
 destructor TIBMCPQueryTools.Destroy;
 begin
-  FAudit.Free;
-  FValidator.Free;
-  FSettings.Free;
   inherited Destroy;
 end;
 
@@ -81,7 +81,7 @@ var
   Query: TFDQuery;
   Pair: TJSONPair;
 begin
-  Connection := TIBMCPConnectionManager.CreateConnection;
+  Connection := TIBMCPApp.Current.ConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     Query.Connection := Connection;
@@ -101,10 +101,34 @@ function TIBMCPQueryTools.ExecStatement(const ASql: string): string;
 var
   Connection: TFDConnection;
 begin
-  Connection := TIBMCPConnectionManager.CreateConnection;
+  Connection := TIBMCPApp.Current.ConnectionManager.CreateConnection;
   try
     Result := '{"Affected rows": ' + Connection.ExecSQL(ASql).ToString + '}';
   finally
+    Connection.Free;
+  end;
+end;
+
+function TIBMCPQueryTools.ExecProcedure(const AProcName: string;
+  const AParams: TJSONObject): string;
+var
+  Connection: TFDConnection;
+  Proc: TFDStoredProc;
+  Pair: TJSONPair;
+begin
+  Connection := TIBMCPApp.Current.ConnectionManager.CreateConnection;
+  Proc := TFDStoredProc.Create(nil);
+  try
+    Proc.Connection := Connection;
+    Proc.StoredProcName := AProcName;
+    Proc.Prepare;
+    if Assigned(AParams) then
+      for Pair in AParams do
+        Proc.ParamByName(Pair.JsonString.Value).Value := Pair.JsonValue.Value;
+    Proc.ExecProc;
+    Result := '{"Affected rows": ' + Proc.RowsAffected.ToString + '}';
+  finally
+    Proc.Free;
     Connection.Free;
   end;
 end;
@@ -114,45 +138,32 @@ var
   Sql: string;
   Stopwatch: TStopwatch;
   Validation: TIBMCPSqlValidationResult;
-  ProvidedToken: string;
-  UserLevel: TUserLevel;
 begin
   Sql := Args.GetValue<string>('sql', '');
   Validation := FValidator.ValidateSql(Sql);
   if not Validation.Accepted then
     Exit(TMCPToolResult.Error(Validation.Reason));
 
-  // Try to obtain an authorization token from the incoming args (if the caller forwarded it)
-  ProvidedToken := Args.GetValue<string>('authorization', '');
-  if ProvidedToken = '' then
-    ProvidedToken := Args.GetValue<string>('Authorization', '');
-
-  // Compute user level from configured secrets and provided token
-  UserLevel := FSettings.GetUserLevel(ProvidedToken);
-
   Stopwatch := TStopwatch.StartNew;
   try
     // VIEW statements: require view rights and return a dataset (cursor)
     if FValidator.IsViewStatement(Sql) then begin
-      if not (urView in UserLevel) then
+      if not(urView in TIBMCPApp.Current.UserLevel) then
         Exit(TMCPToolResult.Error('Forbidden: VIEW access required'));
       Result := TMCPToolResult.Text(ExecDataset(Sql, nil));
 
-    // CRUD statements: require crud rights and execute as non-cursor
+      // CRUD statements: require crud rights and execute as non-cursor
     end else if FValidator.IsCrudStatement(Sql) then begin
-      if not (urCrud in UserLevel) then
+      if not(urCrud in TIBMCPApp.Current.UserLevel) then
         Exit(TMCPToolResult.Error('Forbidden: CRUD access required'));
       Result := TMCPToolResult.Text(ExecStatement(Sql));
 
-    // DBA statements: per chosen policy, require CRUD rights (as requested) and execute as non-cursor
+      // DBA statements: require DBA rights and execute as non-cursor
     end else if FValidator.IsDbaStatement(Sql) then begin
-      if not (urCrud in UserLevel) then
-        Exit(TMCPToolResult.Error('Forbidden: CRUD access required for DBA statements'));
+      if not(urDba in TIBMCPApp.Current.UserLevel) then
+        Exit(TMCPToolResult.Error('Forbidden: DBA access required'));
       Result := TMCPToolResult.Text(ExecStatement(Sql));
-
-    // Default: treat as statement
-    end else
-      Result := TMCPToolResult.Text(ExecStatement(Sql));
+    end;
 
     Stopwatch.Stop;
     FAudit.WriteToolCall('execute_sql', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
@@ -182,7 +193,7 @@ begin
     Exit(TMCPToolResult.Error(Validation.Reason));
 
   Stopwatch := TStopwatch.StartNew;
-  Connection := TIBMCPConnectionManager.CreateConnection;
+  Connection := TIBMCPApp.Current.ConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     try
@@ -224,20 +235,16 @@ function TIBMCPQueryTools.ExecuteProcedure(const Args: TJSONObject): TMCPToolRes
 var
   Params: TJSONObject;
   ProcName: string;
-  Sql: string;
   Stopwatch: TStopwatch;
-  Validation: TIBMCPSqlValidationResult;
 begin
   ProcName := Args.GetValue<string>('proc_name', '').Trim;
   Params := Args.GetValue<TJSONObject>('params');
-  Sql := 'execute procedure ' + ProcName;
-  Validation := FValidator.ValidateSql(Sql);
-  if not Validation.Accepted then
-    Exit(TMCPToolResult.Error(Validation.Reason));
 
   Stopwatch := TStopwatch.StartNew;
   try
-    Result := TMCPToolResult.Text(ExecDataset(Sql, Params));
+    if not(urCrud in TIBMCPApp.Current.UserLevel) then
+      Exit(TMCPToolResult.Error('Forbidden: CRUD access required'));
+    Result := TMCPToolResult.Text(ExecProcedure(ProcName, Params));
     Stopwatch.Stop;
     FAudit.WriteToolCall('execute_procedure', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
   except

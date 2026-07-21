@@ -6,8 +6,7 @@ uses
   System.JSON,
   Dext.AI.MCP.Attributes,
   Dext.AI.MCP.Tools,
-  Dext.AI.MCP.Types,
-  IB.MCP.ConnectionManager;
+  Dext.AI.MCP.Types;
 
 type
   /// <summary>
@@ -59,6 +58,7 @@ implementation
 uses
   System.SysUtils,
   FireDAC.Comp.Client,
+  IB.MCP.App,
   IB.MCP.DatasetHelper;
 
   { TIBMCPStatisticsTools }
@@ -73,7 +73,7 @@ var
   Connection: TFDConnection;
   Query: TFDQuery;
 begin
-  Connection := TIBMCPConnectionManager.CreateConnection;
+  Connection := TIBMCPApp.Current.ConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     Query.Connection := Connection;

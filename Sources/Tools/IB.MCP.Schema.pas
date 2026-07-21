@@ -8,7 +8,6 @@ uses
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
   Dext.AI.MCP.Types,
-  IB.MCP.ConnectionManager,
   IB.MCP.AuditLogger;
 
 type
@@ -18,7 +17,6 @@ type
   TIBMCPSchemaTools = class(TMCPToolProvider)
   private
     FAudit: TIBMCPAuditLogger;
-    FOwnsAudit: Boolean;
 
     /// <summary>
     /// Runs a schema-discovery SELECT, optionally binding a single named parameter,
@@ -86,6 +84,7 @@ uses
   System.SysUtils,
   FireDAC.Comp.Client,
   FireDAC.Stan.Param,
+  IB.MCP.App,
   IB.MCP.DatasetHelper;
 
   { TIBMCPSchemaTools }
@@ -93,15 +92,52 @@ uses
 constructor TIBMCPSchemaTools.Create;
 begin
   inherited Create;
-  FAudit := TIBMCPAuditLogger.Create;
-  FOwnsAudit := True;
+  FAudit := TIBMCPApp.Current.AuditLogger;
 end;
 
 destructor TIBMCPSchemaTools.Destroy;
 begin
-  if FOwnsAudit then
-    FAudit.Free;
   inherited Destroy;
+end;
+
+function TIBMCPSchemaTools.RunDiscoveryQuery(const AToolName, ASql, AParamName, AParamValue: string): string;
+var
+  Connection: TFDConnection;
+  Query: TFDQuery;
+  Params: TJSONObject;
+  Stopwatch: TStopwatch;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  Connection := TIBMCPApp.Current.ConnectionManager.CreateConnection;
+  Query := TFDQuery.Create(nil);
+  try
+    Params := TJSONObject.Create;
+    try
+      try
+        if AParamName <> '' then
+          Params.AddPair(AParamName, AParamValue);
+        Query.Connection := Connection;
+        Query.SQL.Text := ASql;
+        if (AParamName <> '') and (AParamValue <> '') then
+          Query.ParamByName(AParamName).AsString := AParamValue.ToUpperInvariant;
+        Query.Open;
+        Result := TIBMCPDatasetHelper.DatasetToJson(Query);
+        Stopwatch.Stop;
+        FAudit.WriteToolCall(AToolName, Params.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
+      except
+        on E: Exception do begin
+          Stopwatch.Stop;
+          FAudit.WriteToolCall(AToolName, Params.ToJSON, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+          raise;
+        end;
+      end;
+    finally
+      Params.Free;
+    end;
+  finally
+    Query.Free;
+    Connection.Free;
+  end;
 end;
 
 function TIBMCPSchemaTools.GetCheckConstraints(const Args: TJSONObject): TMCPToolResult;
@@ -151,46 +187,6 @@ end;
 function TIBMCPSchemaTools.GetDatabaseInfo(const Args: TJSONObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_database_details', SQL_GET_DATABASE_INFO));
-end;
-
-function TIBMCPSchemaTools.RunDiscoveryQuery(const AToolName, ASql, AParamName, AParamValue: string): string;
-var
-  Connection: TFDConnection;
-  Query: TFDQuery;
-  Params: TJSONObject;
-  Stopwatch: TStopwatch;
-begin
-  Stopwatch := TStopwatch.StartNew;
-  Connection := TIBMCPConnectionManager.CreateConnection;
-  Query := TFDQuery.Create(nil);
-  try
-    Params := TJSONObject.Create;
-    try
-      try
-        if AParamName <> '' then
-          Params.AddPair(AParamName, AParamValue);
-        Query.Connection := Connection;
-        Query.SQL.Text := ASql;
-        if (AParamName <> '') and (AParamValue <> '') then
-          Query.ParamByName(AParamName).AsString := AParamValue.ToUpperInvariant;
-        Query.Open;
-        Result := TIBMCPDatasetHelper.DatasetToJson(Query);
-        Stopwatch.Stop;
-        FAudit.WriteToolCall(AToolName, Params.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
-      except
-        on E: Exception do begin
-          Stopwatch.Stop;
-          FAudit.WriteToolCall(AToolName, Params.ToJSON, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
-          raise;
-        end;
-      end;
-    finally
-      Params.Free;
-    end;
-  finally
-    Query.Free;
-    Connection.Free;
-  end;
 end;
 
 function TIBMCPSchemaTools.GetTriggers(const Args: TJSONObject): TMCPToolResult;
