@@ -3,6 +3,9 @@ unit IB.MCP.Settings;
 interface
 
 type
+  TUserRight = (urView, urCrud, urDba);
+  TUserLevel = set of TUserRight;
+
   /// <summary>
   /// Loads and exposes server settings from mcp_interbase.ini.
   /// </summary>
@@ -11,7 +14,6 @@ type
     // [MCPServer]
     FMCPHost: string;
     FMCPPort: Integer;
-    FMCPSecret: string;
     FUseHttps: Boolean;
     FSslProvider: string;
     FSslCert: string;
@@ -24,12 +26,12 @@ type
     FUserName: string;
     FPassword: string;
     FCharacterSet: string;
-    // [Pool]
-    FPoolMinSize: Integer;
-    FPoolMaxSize: Integer;
     // [Security]
     FForbiddenDML: string;
     FForbiddenDDL: string;
+    FVIEWSecret: string;
+    FCRUDSecret: string;
+    FDBASecret: string;
     // [Logging]
     FAuditPath: string;
   public
@@ -39,8 +41,6 @@ type
     property MCPHost: string read FMCPHost write FMCPHost;
     /// <summary>MCP server port.</summary>
     property MCPPort: Integer read FMCPPort write FMCPPort;
-    /// <summary>MCP server shared secret.</summary>
-    property MCPSecret: string read FMCPSecret write FMCPSecret;
     /// <summary>Enables HTTPS for the MCP server endpoint.</summary>
     property UseHttps: Boolean read FUseHttps write FUseHttps;
     /// <summary>SSL/TLS provider name (e.g. OpenSSL).</summary>
@@ -65,18 +65,22 @@ type
     /// <summary>Connection character set.</summary>
     property CharacterSet: string read FCharacterSet write FCharacterSet;
 
-    /// <summary>Minimum connection pool size.</summary>
-    property PoolMinSize: Integer read FPoolMinSize write FPoolMinSize;
-    /// <summary>Maximum connection pool size.</summary>
-    property PoolMaxSize: Integer read FPoolMaxSize write FPoolMaxSize;
-
     /// <summary>Comma-separated DML statements forbidden for execution (e.g. INSERT,UPDATE,DELETE).</summary>
     property ForbiddenDML: string read FForbiddenDML write FForbiddenDML;
     /// <summary>Comma-separated DDL statements forbidden for execution (e.g. CREATE,ALTER,DROP).</summary>
     property ForbiddenDDL: string read FForbiddenDDL write FForbiddenDDL;
+    /// <summary>Shared secret for VIEW-level (read-only) tool access.</summary>
+    property VIEWSecret: string read FVIEWSecret write FVIEWSecret;
+    /// <summary>Shared secret for CRUD-level tool access.</summary>
+    property CRUDSecret: string read FCRUDSecret write FCRUDSecret;
+    /// <summary>Shared secret for DBA-level tool access.</summary>
+    property DBASecret: string read FDBASecret write FDBASecret;
 
     /// <summary>Audit log path.</summary>
     property AuditPath: string read FAuditPath write FAuditPath;
+
+    /// <summary>Compute user level based on Authorization header and configured secrets.</summary>
+    function GetUserLevel(const AuthorizationHeader: string): TUserLevel;
   end;
 
 implementation
@@ -98,14 +102,13 @@ begin
   LIniFile := TIniFile.Create(LIniPath);
   try
     // [MCPServer]
-    FMCPHost      := LIniFile.ReadString ('MCPServer', 'MCPHost',      'localhost');
-    FMCPPort      := LIniFile.ReadInteger('MCPServer', 'MCPPort',      5000);
-    FMCPSecret    := LIniFile.ReadString ('MCPServer', 'MCPSecret',    '');
-    FUseHttps     := LIniFile.ReadBool   ('MCPServer', 'UseHttps',     False);
-    FSslProvider  := LIniFile.ReadString ('MCPServer', 'SslProvider',  'OpenSSL');
-    FSslCert      := LIniFile.ReadString ('MCPServer', 'SslCert',      'server.crt');
-    FSslKey       := LIniFile.ReadString ('MCPServer', 'SslKey',       'server.key');
-    FSslRootCert  := LIniFile.ReadString ('MCPServer', 'SslRootCert',  '');
+    FMCPHost      := LIniFile.ReadString ('MCPServer', 'MCPHost',     'localhost');
+    FMCPPort      := LIniFile.ReadInteger('MCPServer', 'MCPPort',     5000);
+    FUseHttps     := LIniFile.ReadBool   ('MCPServer', 'UseHttps',    False);
+    FSslProvider  := LIniFile.ReadString ('MCPServer', 'SslProvider', 'OpenSSL');
+    FSslCert      := LIniFile.ReadString ('MCPServer', 'SslCert',     'server.crt');
+    FSslKey       := LIniFile.ReadString ('MCPServer', 'SslKey',      'server.key');
+    FSslRootCert  := LIniFile.ReadString ('MCPServer', 'SslRootCert', '');
 
     // [Database]
     FHost         := LIniFile.ReadString ('Database', 'Host',         'localhost');
@@ -115,19 +118,30 @@ begin
     FPassword     := LIniFile.ReadString ('Database', 'Password',     'masterkey');
     FCharacterSet := LIniFile.ReadString ('Database', 'CharacterSet', 'UTF8');
 
-    // [Pool]
-    FPoolMinSize  := LIniFile.ReadInteger('Pool', 'PoolMinSize', 1);
-    FPoolMaxSize  := LIniFile.ReadInteger('Pool', 'PoolMaxSize', 10);
-
     // [Security]
     FForbiddenDML := LIniFile.ReadString('Security', 'ForbiddenDML', 'INSERT,UPDATE,DELETE,TRUNCATE');
     FForbiddenDDL := LIniFile.ReadString('Security', 'ForbiddenDDL', 'CREATE,ALTER,DROP,GRANT,REVOKE,SET');
+    FVIEWSecret   := LIniFile.ReadString('Security', 'VIEWSecret',   '');
+    FCRUDSecret   := LIniFile.ReadString('Security', 'CRUDSecret',   '');
+    FDBASecret    := LIniFile.ReadString('Security', 'DBASecret',    '');
 
     // [Logging]
     FAuditPath := LIniFile.ReadString('Logging', 'AuditPath', 'logs/audit.jsonl');
   finally
     LIniFile.Free;
   end;
+end;
+
+function TIBMCPSettings.GetUserLevel(const AuthorizationHeader: string): TUserLevel;
+begin
+  Result := [];
+  // empty secret means "open" access for that level
+  if (FVIEWSecret = '') or (AuthorizationHeader = FVIEWSecret) then
+    Include(Result, urView);
+  if (FCRUDSecret = '') or (AuthorizationHeader = FCRUDSecret) then
+    Include(Result, urCrud);
+  if (FDBASecret = '') or (AuthorizationHeader = FDBASecret) then
+    Include(Result, urDba);
 end;
 
 end.
