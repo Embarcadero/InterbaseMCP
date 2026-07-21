@@ -10,43 +10,42 @@ uses
   Dext.AI.MCP.Types,
   IB.MCP.ConnectionManager,
   IB.MCP.SqlValidator,
-  IB.MCP.AuditLogger;
+  IB.MCP.AuditLogger,
+  IB.MCP.Settings;
 
-type
-  /// <summary>
   /// MCP tools for SQL execution and execution-plan inspection.
   /// Routes statements to <c>ExecDataset</c> (cursor-producing) or
   /// <c>ExecStatement</c> (DML) based on <c>ReturnsCursor</c>.
   /// </summary>
-  TIBMCPQueryTools = class(TMCPToolProvider)
-  private
-    FValidator: TIBMCPSqlValidator;
-    FAudit: TIBMCPAuditLogger;
-    FOwnsValidator: Boolean;
-    FOwnsAudit: Boolean;
+  type
+    TIBMCPQueryTools = class(TMCPToolProvider)
+    private
+      FValidator: TIBMCPSqlValidator;
+      FSettings: TIBMCPSettings;
+      FAudit: TIBMCPAuditLogger;
 
-    /// <summary>Runs a cursor-returning SQL statement and serialises the result set to JSON.</summary>
-    function ExecDataset(const ASql: string; const AParams: TJSONObject): string;
-    /// <summary>Runs a non-cursor SQL statement and returns affected-row count as JSON.</summary>
-    function ExecStatement(const ASql: string): string;
-  public
-    constructor Create; overload;
+      /// <summary>Runs a cursor-returning SQL statement and serialises the result set to JSON.</summary>
+      function ExecDataset(const ASql: string; const AParams: TJSONObject): string;
+      /// <summary>Runs a non-cursor SQL statement and returns affected-row count as JSON.</summary>
+      function ExecStatement(const ASql: string): string;
+    public
+      constructor Create; overload;
 
-    destructor Destroy; override;
+      destructor Destroy; override;
 
-    [MCPTool('execute_sql', 'Execute a SQL statement on the InterBase database')]
-    [MCPParam('sql', 'The SQL statement to execute')]
-    function ExecuteSql(const Args: TJSONObject): TMCPToolResult; virtual;
+      [MCPTool('execute_sql', 'Execute a SQL statement on the InterBase database')]
+      [MCPParam('sql', 'The SQL statement to execute')]
+      function ExecuteSql(const Args: TJSONObject): TMCPToolResult; virtual;
 
-    [MCPTool('explain_plan', 'Return the InterBase execution plan for a SQL statement')]
-    [MCPParam('sql', 'The SQL statement to explain')]
-    function ExplainPlan(const Args: TJSONObject): TMCPToolResult; virtual;
+      [MCPTool('explain_plan', 'Return the InterBase execution plan for a SQL statement')]
+      [MCPParam('sql', 'The SQL statement to explain')]
+      function ExplainPlan(const Args: TJSONObject): TMCPToolResult; virtual;
 
-    [MCPTool('execute_procedure', 'Execute an InterBase stored procedure')]
-    [MCPParam('proc_name', 'Stored procedure name')]
-    [MCPParam('params', 'JSON object of procedure parameters', ptObject, False)]
-    function ExecuteProcedure(const Args: TJSONObject): TMCPToolResult; virtual;
-  end;
+      [MCPTool('execute_procedure', 'Execute an InterBase stored procedure')]
+      [MCPParam('proc_name', 'Stored procedure name')]
+      [MCPParam('params', 'JSON object of procedure parameters', ptObject, False)]
+      function ExecuteProcedure(const Args: TJSONObject): TMCPToolResult; virtual;
+    end;
 
 implementation
 
@@ -64,17 +63,15 @@ constructor TIBMCPQueryTools.Create;
 begin
   inherited Create;
   FValidator := TIBMCPSqlValidator.Create;
-  FOwnsValidator := True;
+  FSettings:= TIBMCPSettings.Create;
   FAudit := TIBMCPAuditLogger.Create;
-  FOwnsAudit := True;
 end;
 
 destructor TIBMCPQueryTools.Destroy;
 begin
-  if FOwnsAudit then
-    FAudit.Free;
-  if FOwnsValidator then
-    FValidator.Free;
+  FAudit.Free;
+  FValidator.Free;
+  FSettings.Free;
   inherited Destroy;
 end;
 
@@ -117,18 +114,46 @@ var
   Sql: string;
   Stopwatch: TStopwatch;
   Validation: TIBMCPSqlValidationResult;
+  ProvidedToken: string;
+  UserLevel: TUserLevel;
 begin
   Sql := Args.GetValue<string>('sql', '');
   Validation := FValidator.ValidateSql(Sql);
   if not Validation.Accepted then
     Exit(TMCPToolResult.Error(Validation.Reason));
 
+  // Try to obtain an authorization token from the incoming args (if the caller forwarded it)
+  ProvidedToken := Args.GetValue<string>('authorization', '');
+  if ProvidedToken = '' then
+    ProvidedToken := Args.GetValue<string>('Authorization', '');
+
+  // Compute user level from configured secrets and provided token
+  UserLevel := FSettings.GetUserLevel(ProvidedToken);
+
   Stopwatch := TStopwatch.StartNew;
   try
-    if FValidator.IsViewStatement(Sql) then
-      Result := TMCPToolResult.Text(ExecDataset(Sql, nil))
-    else
+    // VIEW statements: require view rights and return a dataset (cursor)
+    if FValidator.IsViewStatement(Sql) then begin
+      if not (urView in UserLevel) then
+        Exit(TMCPToolResult.Error('Forbidden: VIEW access required'));
+      Result := TMCPToolResult.Text(ExecDataset(Sql, nil));
+
+    // CRUD statements: require crud rights and execute as non-cursor
+    end else if FValidator.IsCrudStatement(Sql) then begin
+      if not (urCrud in UserLevel) then
+        Exit(TMCPToolResult.Error('Forbidden: CRUD access required'));
       Result := TMCPToolResult.Text(ExecStatement(Sql));
+
+    // DBA statements: per chosen policy, require CRUD rights (as requested) and execute as non-cursor
+    end else if FValidator.IsDbaStatement(Sql) then begin
+      if not (urCrud in UserLevel) then
+        Exit(TMCPToolResult.Error('Forbidden: CRUD access required for DBA statements'));
+      Result := TMCPToolResult.Text(ExecStatement(Sql));
+
+    // Default: treat as statement
+    end else
+      Result := TMCPToolResult.Text(ExecStatement(Sql));
+
     Stopwatch.Stop;
     FAudit.WriteToolCall('execute_sql', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
   except
@@ -225,3 +250,5 @@ begin
 end;
 
 end.
+
+
