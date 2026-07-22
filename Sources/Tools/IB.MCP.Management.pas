@@ -160,6 +160,7 @@ begin
       LBackup.DriverLink := LDriverLink;
       LBackup.Host := FSettings.Host;
       LBackup.Protocol := ipTCPIP;
+      LBackup.Port := FSettings.Port;
       LBackup.UserName := FSettings.UserName;
       LBackup.Password := FSettings.Password;
       LBackup.Database := FSettings.Database;
@@ -233,6 +234,7 @@ begin
       LRestore.DriverLink := LDriverLink;
       LRestore.Host := FSettings.Host;
       LRestore.Protocol := ipTCPIP;
+      LRestore.Port := FSettings.Port;
       LRestore.UserName := FSettings.UserName;
       LRestore.Password := FSettings.Password;
       LRestore.Database := LTargetDatabase;
@@ -301,6 +303,7 @@ begin
       LValidate.DriverLink := LDriverLink;
       LValidate.Host := FSettings.Host;
       LValidate.Protocol := ipTCPIP;
+      LValidate.Port := FSettings.Port;
       LValidate.UserName := FSettings.UserName;
       LValidate.Password := FSettings.Password;
       LValidate.Database := FSettings.Database;
@@ -370,6 +373,7 @@ begin
       LValidate.DriverLink := LDriverLink;
       LValidate.Host := FSettings.Host;
       LValidate.Protocol := ipTCPIP;
+      LValidate.Port := FSettings.Port;
       LValidate.UserName := FSettings.UserName;
       LValidate.Password := FSettings.Password;
       LValidate.Database := FSettings.Database;

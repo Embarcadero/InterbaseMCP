@@ -35,17 +35,21 @@ uses
 
       destructor Destroy; override;
 
-      [MCPTool('execute_sql', 'Execute a SQL statement on the InterBase database')]
-      [MCPParam('sql', 'The SQL statement to execute')]
+      [MCPTool('open_cursor', 'Executes a read-only SELECT query and returns the resulting dataset. Use only for retrieving data.')]
+      [MCPParam('sql', 'The SELECT statement to execute.')]
+      function OpenCursor(const Args: TJSONObject): TMCPToolResult; virtual;
+
+      [MCPTool('execute_sql', 'Executes a non-query SQL statement (such as INSERT, UPDATE, DELETE, or DDL) on the InterBase database.')]
+      [MCPParam('sql', 'The DML or DDL statement to execute. Do not use for SELECT statements.')]
       function ExecuteSql(const Args: TJSONObject): TMCPToolResult; virtual;
 
-      [MCPTool('explain_plan', 'Return the InterBase execution plan for a SQL statement')]
-      [MCPParam('sql', 'The SQL statement to explain')]
+      [MCPTool('explain_plan', 'Retrieves the InterBase execution plan for a SQL query to analyze performance and index usage.')]
+      [MCPParam('sql', 'The SQL statement to analyze.')]
       function ExplainPlan(const Args: TJSONObject): TMCPToolResult; virtual;
 
-      [MCPTool('execute_procedure', 'Execute an InterBase stored procedure')]
-      [MCPParam('proc_name', 'Stored procedure name')]
-      [MCPParam('params', 'JSON object of procedure parameters', ptObject, False)]
+      [MCPTool('execute_procedure', 'Executes an InterBase stored procedure and returns its execution status or output variables.')]
+      [MCPParam('proc_name', 'The name of the stored procedure to execute.')]
+      [MCPParam('params', 'A JSON object mapping parameter names to their input values.', ptObject, False)]
       function ExecuteProcedure(const Args: TJSONObject): TMCPToolResult; virtual;
     end;
 
@@ -133,7 +137,7 @@ begin
   end;
 end;
 
-function TIBMCPQueryTools.ExecuteSql(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPQueryTools.OpenCursor(const Args: TJSONObject): TMCPToolResult;
 var
   Sql: string;
   Stopwatch: TStopwatch;
@@ -149,21 +153,48 @@ begin
     // VIEW statements: require view rights and return a dataset (cursor)
     if FValidator.IsViewStatement(Sql) then begin
       if not(urView in TIBMCPApp.Current.UserLevel) then
-        Exit(TMCPToolResult.Error('Forbidden: VIEW access required'));
+        Exit(TMCPToolResult.Error('Forbidden: VIEW access required!'));
       Result := TMCPToolResult.Text(ExecDataset(Sql, nil));
+    end
+    else Exit(TMCPToolResult.Error('Not a valid SELECT statement!'));
 
-      // CRUD statements: require crud rights and execute as non-cursor
-    end else if FValidator.IsCrudStatement(Sql) then begin
+    Stopwatch.Stop;
+    FAudit.WriteToolCall('open_cursor', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
+  except
+    on E: Exception do begin
+      Stopwatch.Stop;
+      FAudit.WriteToolCall('open_cursor', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+      Result := TMCPToolResult.Error(E.Message);
+    end;
+  end;
+end;
+
+function TIBMCPQueryTools.ExecuteSql(const Args: TJSONObject): TMCPToolResult;
+var
+  Sql: string;
+  Stopwatch: TStopwatch;
+  Validation: TIBMCPSqlValidationResult;
+begin
+  Sql := Args.GetValue<string>('sql', '');
+  Validation := FValidator.ValidateSql(Sql);
+  if not Validation.Accepted then
+    Exit(TMCPToolResult.Error(Validation.Reason));
+
+  Stopwatch := TStopwatch.StartNew;
+  try
+    // CRUD statements: require crud rights and execute as non-cursor
+    if FValidator.IsCrudStatement(Sql) then begin
       if not(urCrud in TIBMCPApp.Current.UserLevel) then
-        Exit(TMCPToolResult.Error('Forbidden: CRUD access required'));
+        Exit(TMCPToolResult.Error('Forbidden: CRUD access required!'));
       Result := TMCPToolResult.Text(ExecStatement(Sql));
 
-      // DBA statements: require DBA rights and execute as non-cursor
+    // DBA statements: require DBA rights and execute as non-cursor
     end else if FValidator.IsDbaStatement(Sql) then begin
       if not(urDba in TIBMCPApp.Current.UserLevel) then
-        Exit(TMCPToolResult.Error('Forbidden: DBA access required'));
+        Exit(TMCPToolResult.Error('Forbidden: DBA access required!'));
       Result := TMCPToolResult.Text(ExecStatement(Sql));
-    end;
+
+    end else Exit(TMCPToolResult.Error('Not a valid CRUD or DDL statement!'));
 
     Stopwatch.Stop;
     FAudit.WriteToolCall('execute_sql', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');

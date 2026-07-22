@@ -139,9 +139,16 @@ begin
   if (FVIEWSecret = '') or (AuthorizationHeader = FVIEWSecret) then
     Include(Result, urView);
   if (FCRUDSecret = '') or (AuthorizationHeader = FCRUDSecret) then
+   begin
+    Include(Result, urView);
     Include(Result, urCrud);
+   end;
   if (FDBASecret = '') or (AuthorizationHeader = FDBASecret) then
+   begin
+    Include(Result, urView);
+    Include(Result, urCrud);
     Include(Result, urDba);
+   end;
 end;
 
 end.
