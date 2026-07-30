@@ -109,3 +109,11 @@ Below is an overview of the required and optional parameters:
 ### `[Logging]`
 
 * **`AuditPath`** (Default: `logs/audit.jsonl`): The path where the server writes tool execution audit logs.
+
+
+
+* * *
+
+## Issues and Roadmap
+
+If you encounter any issues or have a feature request, please report them using **GitHub Issues**. You can also check out what’s planned for the **v1.1 release** by filtering by the `v1.1` milestone.
