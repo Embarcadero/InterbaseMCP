@@ -104,7 +104,7 @@ Below is an overview of the required and optional parameters:
 
 **`DBASecret`**: Shared secret required to call DBA-level tools (metadata changes, backup, restore, validate, sweep).
 
-⚠️ Empty Secret means no access control.
+⚠️ Security levels are hierarchical. For example, a user with **DBA** privileges automatically inherits **CRUD** and **VIEW** permissions. If the **Secrets** field is left empty, no access control is enforced.
 
 ### `[Logging]`
 

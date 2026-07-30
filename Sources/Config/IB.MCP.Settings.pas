@@ -106,8 +106,8 @@ begin
     FMCPPort      := LIniFile.ReadInteger('MCPServer', 'MCPPort',     5000);
     FUseHttps     := LIniFile.ReadBool   ('MCPServer', 'UseHttps',    False);
     FSslProvider  := LIniFile.ReadString ('MCPServer', 'SslProvider', 'OpenSSL');
-    FSslCert      := LIniFile.ReadString ('MCPServer', 'SslCert',     'server.crt');
-    FSslKey       := LIniFile.ReadString ('MCPServer', 'SslKey',      'server.key');
+    FSslCert      := LIniFile.ReadString ('MCPServer', 'SslCert',     '');
+    FSslKey       := LIniFile.ReadString ('MCPServer', 'SslKey',      '');
     FSslRootCert  := LIniFile.ReadString ('MCPServer', 'SslRootCert', '');
 
     // [Database]
