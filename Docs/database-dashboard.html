@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterBase Database Dashboard</title>
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --panel:#ffffff;
+      --border:#e2e8f0;
+      --text:#0f172a;
+      --muted:#64748b;
+      --accent:#0ea5e9;
+      --accent2:#7c3aed;
+      --good:#16a34a;
+      --warn:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;background:linear-gradient(180deg,#f8fafc,#eef2ff);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;overflow:hidden}
+    .shell{height:100%;display:grid;grid-template-rows:auto 1fr}
+    .topbar{display:flex;justify-content:space-between;align-items:end;padding:18px 22px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.75);backdrop-filter:blur(10px)}
+    h1{margin:0;font-size:22px}
+    .sub{margin-top:4px;color:var(--muted);font-size:13px}
+    .viewport{overflow:auto;padding:20px}
+    .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 10px 30px rgba(15,23,42,.06)}
+    .metric .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+    .metric .value{font-size:30px;font-weight:800;margin-top:8px}
+    .metric .detail{color:var(--muted);font-size:13px;margin-top:6px}
+    .span3{grid-column:span 3}
+    .span4{grid-column:span 4}
+    .span5{grid-column:span 5}
+    .span6{grid-column:span 6}
+    .span7{grid-column:span 7}
+    .span8{grid-column:span 8}
+    .span12{grid-column:span 12}
+    .section-title{font-size:14px;font-weight:700;margin:0 0 12px}
+    .bars{display:flex;flex-direction:column;gap:10px}
+    .bar-row{display:grid;grid-template-columns:180px 1fr 88px;gap:10px;align-items:center}
+    .bar-track{height:14px;background:#e2e8f0;border-radius:999px;overflow:hidden}
+    .bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#38bdf8);border-radius:999px}
+    .bar-fill.alt{background:linear-gradient(90deg,var(--accent2),#a78bfa)}
+    .bar-label,.bar-value{font-size:13px}
+    .mini-table{width:100%;border-collapse:collapse}
+    .mini-table th,.mini-table td{padding:10px 8px;border-bottom:1px solid #e2e8f0;font-size:13px;text-align:left}
+    .mini-table th{color:var(--muted);font-weight:600}
+    .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#f1f5f9;border:1px solid #e2e8f0}
+    .dot{width:10px;height:10px;border-radius:50%}
+    .svg-wrap{width:100%;overflow:auto}
+    svg{width:100%;height:auto;display:block}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div>
+      <h1>InterBase Database Dashboard</h1>
+      <div class="sub">Live operational summary from COUNTRY, CUSTOMER, DEPARTMENT, EMPLOYEE, PROJECT, SALES, and related tables</div>
+    </div>
+    <div class="legend">
+      <span class="pill"><span class="dot" style="background:var(--accent)"></span> Sales</span>
+      <span class="pill"><span class="dot" style="background:var(--accent2)"></span> Reference data</span>
+      <span class="pill"><span class="dot" style="background:var(--good)"></span> HR</span>
+      <span class="pill"><span class="dot" style="background:var(--warn)"></span> Status</span>
+    </div>
+  </div>
+  <div class="viewport">
+    <div class="grid">
+      <div class="card metric span3">
+        <div class="label">Tables</div>
+        <div class="value">10</div>
+        <div class="detail">User tables in the schema</div>
+      </div>
+      <div class="card metric span3">
+        <div class="label">Sales Rows</div>
+        <div class="value">33</div>
+        <div class="detail">Orders in SALES</div>
+      </div>
+      <div class="card metric span3">
+        <div class="label">Total Sales Value</div>
+        <div class="value">$2.25M</div>
+        <div class="detail">SUM(TOTAL_VALUE)</div>
+      </div>
+      <div class="card metric span3">
+        <div class="label">Distinct Customers</div>
+        <div class="value">15</div>
+        <div class="detail">Customers with sales</div>
+      </div>
+
+      <div class="card span6">
+        <div class="section-title">Sales KPIs</div>
+        <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:12px">
+          <div class="metric card" style="box-shadow:none">
+            <div class="label">Average Sale</div>
+            <div class="value" style="font-size:24px">$68.2K</div>
+          </div>
+          <div class="metric card" style="box-shadow:none">
+            <div class="label">Max Sale</div>
+            <div class="value" style="font-size:24px">$560K</div>
+          </div>
+          <div class="metric card" style="box-shadow:none">
+            <div class="label">Customers with Sales</div>
+            <div class="value" style="font-size:24px">33</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card span6">
+        <div class="section-title">Order Status Mix</div>
+        <div class="bars">
+          <div class="bar-row"><div class="bar-label">shipped</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-value">21 / $1.68M</div></div>
+          <div class="bar-row"><div class="bar-label">open</div><div class="bar-track"><div class="bar-fill alt" style="width:32%"></div></div><div class="bar-value">8 / $551.1K</div></div>
+          <div class="bar-row"><div class="bar-label">waiting</div><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><div class="bar-value">4 / $17.8K</div></div>
+        </div>
+      </div>
+
+      <div class="card span4">
+        <div class="section-title">Customers by Country</div>
+        <div class="bars">
+          <div class="bar-row"><div class="bar-label">USA</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-value">5</div></div>
+          <div class="bar-row"><div class="bar-label">Belgium</div><div class="bar-track"><div class="bar-fill alt" style="width:20%"></div></div><div class="bar-value">1</div></div>
+          <div class="bar-row"><div class="bar-label">Canada</div><div class="bar-track"><div class="bar-fill alt" style="width:20%"></div></div><div class="bar-value">1</div></div>
+          <div class="bar-row"><div class="bar-label">England</div><div class="bar-track"><div class="bar-fill alt" style="width:20%"></div></div><div class="bar-value">1</div></div>
+          <div class="bar-row"><div class="bar-label">Fiji</div><div class="bar-track"><div class="bar-fill alt" style="width:20%"></div></div><div class="bar-value">1</div></div>
+        </div>
+      </div>
+
+      <div class="card span8">
+        <div class="section-title">Top Customers by Sales Value</div>
+        <div class="svg-wrap">
+          <svg viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet" aria-label="Top customers bar chart">
+            <rect x="0" y="0" width="900" height="360" fill="white"/>
+            <g transform="translate(170,20)">
+              <line x1="0" y1="0" x2="0" y2="300" stroke="#cbd5e1"/>
+              <line x1="0" y1="300" x2="680" y2="300" stroke="#cbd5e1"/>
+              <g fill="#64748b" font-size="11" font-family="Inter, Segoe UI, Arial, sans-serif">
+                <text x="-6" y="308" text-anchor="end">0</text>
+                <text x="170" y="308" text-anchor="middle">250K</text>
+                <text x="340" y="308" text-anchor="middle">500K</text>
+                <text x="510" y="308" text-anchor="middle">750K</text>
+                <text x="680" y="308" text-anchor="end">1.0M</text>
+              </g>
+              <g font-family="Inter, Segoe UI, Arial, sans-serif">
+                <text x="-10" y="28" text-anchor="end" font-size="12" fill="#0f172a">Signature Design</text>
+                <rect x="0" y="12" width="640" height="22" rx="7" fill="#0ea5e9"/>
+                <text x="650" y="28" font-size="12" fill="#0f172a">1,045,610</text>
+
+                <text x="-10" y="58" text-anchor="end" font-size="12" fill="#0f172a">3D-Pad Corp.</text>
+                <rect x="0" y="42" width="284" height="22" rx="7" fill="#7c3aed"/>
+                <text x="294" y="58" font-size="12" fill="#0f172a">463,000</text>
+
+                <text x="-10" y="88" text-anchor="end" font-size="12" fill="#0f172a">DataServe International</text>
+                <rect x="0" y="72" width="245" height="22" rx="7" fill="#0ea5e9"/>
+                <text x="255" y="88" font-size="12" fill="#0f172a">400,008</text>
+
+                <text x="-10" y="118" text-anchor="end" font-size="12" fill="#0f172a">Dynamic Intelligence Corp</text>
+                <rect x="0" y="102" width="75" height="22" rx="7" fill="#7c3aed"/>
+                <text x="85" y="118" font-size="12" fill="#0f172a">121,981</text>
+
+                <text x="-10" y="148" text-anchor="end" font-size="12" fill="#0f172a">Central Bank</text>
+                <rect x="0" y="132" width="46" height="22" rx="7" fill="#0ea5e9"/>
+                <text x="56" y="148" font-size="12" fill="#0f172a">75,000</text>
+
+                <text x="-10" y="178" text-anchor="end" font-size="12" fill="#0f172a">Buttle, Griffith and Co.</text>
+                <rect x="0" y="162" width="24" height="22" rx="7" fill="#7c3aed"/>
+                <text x="34" y="178" font-size="12" fill="#0f172a">39,582</text>
+
+                <text x="-10" y="208" text-anchor="end" font-size="12" fill="#0f172a">Dallas Technologies</text>
+                <rect x="0" y="192" width="22" height="22" rx="7" fill="#0ea5e9"/>
+                <text x="32" y="208" font-size="12" fill="#0f172a">35,451</text>
+
+                <text x="-10" y="238" text-anchor="end" font-size="12" fill="#0f172a">Anini Vacation Rentals</text>
+                <rect x="0" y="222" width="16" height="22" rx="7" fill="#7c3aed"/>
+                <text x="26" y="238" font-size="12" fill="#0f172a">25,000</text>
+
+                <text x="-10" y="268" text-anchor="end" font-size="12" fill="#0f172a">MPM Corporation</text>
+                <rect x="0" y="252" width="13" height="22" rx="7" fill="#0ea5e9"/>
+                <text x="23" y="268" font-size="12" fill="#0f172a">21,195</text>
+
+                <text x="-10" y="298" text-anchor="end" font-size="12" fill="#0f172a">DT Systems, LTD.</text>
+                <rect x="0" y="282" width="9" height="22" rx="7" fill="#7c3aed"/>
+                <text x="19" y="298" font-size="12" fill="#0f172a">14,980</text>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="card span4">
+        <div class="section-title">Employee Salary Summary</div>
+        <div class="bars">
+          <div class="bar-row"><div class="bar-label">Employees</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-value">42</div></div>
+          <div class="bar-row"><div class="bar-label">Avg Salary</div><div class="bar-track"><div class="bar-fill alt" style="width:88%"></div></div><div class="bar-value">$386,729</div></div>
+          <div class="bar-row"><div class="bar-label">Min Salary</div><div class="bar-track"><div class="bar-fill" style="width:3%"></div></div><div class="bar-value">$22,935</div></div>
+          <div class="bar-row"><div class="bar-label">Max Salary</div><div class="bar-track"><div class="bar-fill alt" style="width:100%"></div></div><div class="bar-value">$7,480,000</div></div>
+        </div>
+      </div>
+
+      <div class="card span4">
+        <div class="section-title">Department Headcount</div>
+        <div class="bars">
+          <div class="bar-row"><div class="bar-label">Customer Support</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-value">5</div></div>
+          <div class="bar-row"><div class="bar-label">Software Development</div><div class="bar-track"><div class="bar-fill alt" style="width:80%"></div></div><div class="bar-value">4</div></div>
+          <div class="bar-row"><div class="bar-label">European Headquarters</div><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div><div class="bar-value">3</div></div>
+          <div class="bar-row"><div class="bar-label">Quality Assurance</div><div class="bar-track"><div class="bar-fill alt" style="width:60%"></div></div><div class="bar-value">3</div></div>
+          <div class="bar-row"><div class="bar-label">Research and Development</div><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div><div class="bar-value">3</div></div>
+        </div>
+      </div>
+
+      <div class="card span4">
+        <div class="section-title">Table Row Counts</div>
+        <table class="mini-table">
+          <thead>
+            <tr><th>Table</th><th>Rows</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>SALES</td><td>33</td></tr>
+            <tr><td>EMPLOYEE</td><td>42</td></tr>
+            <tr><td>CUSTOMER</td><td>15</td></tr>
+            <tr><td>DEPARTMENT</td><td>21</td></tr>
+            <tr><td>JOB</td><td>8</td></tr>
+            <tr><td>PROJECT</td><td>6</td></tr>
+            <tr><td>PROJ_DEPT_BUDGET</td><td>5</td></tr>
+            <tr><td>EMPLOYEE_PROJECT</td><td>12</td></tr>
+            <tr><td>SALARY_HISTORY</td><td>12</td></tr>
+            <tr><td>COUNTRY</td><td>2</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

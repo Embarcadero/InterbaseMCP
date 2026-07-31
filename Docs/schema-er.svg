@@ -1,0 +1,366 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1454.0399999999997 1077" width="1454.0399999999997" height="1077" style="--bg:#eff1f5;--fg:#4c4f69;--line:#9ca0b0;--accent:#8839ef;--muted:#9ca0b0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  .mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', ui-monospace, monospace; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 30%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+</defs>
+<polyline points="189.39999999999998,859.25 248.42,859.25 248.42,785.5 685.8799999999999,785.5 685.8799999999999,711.25" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="189.39999999999998,859.25 248.42,859.25 248.42,933 307.43999999999994,933" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="470.0399999999999,133 542.2599999999999,133 542.2599999999999,104.5 685.8799999999999,104.5 685.8799999999999,254.25" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="483.2399999999999,933 685.8799999999999,933 685.8799999999999,528.25" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="763.8799999999999,391.25 840.9399999999998,391.25 840.9399999999998,265.5 934.4999999999998,265.5" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="763.8799999999999,391.25 840.9399999999998,391.25 840.9399999999998,402.25 1319.5399999999997,402.25 1319.5399999999997,336.5" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="1083.8999999999996,265.5 1166.0199999999998,265.5 1166.0199999999998,226.75 1319.5399999999997,226.75 1319.5399999999997,260.5" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="470.0399999999999,133 1225.0399999999997,133" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="1083.8999999999996,265.5 1166.0199999999998,265.5 1166.0199999999998,308.5 1319.5399999999997,308.5 1319.5399999999997,204" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="763.8799999999999,391.25 840.9399999999998,391.25 840.9399999999998,527.75 911.3999999999997,527.75" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="770.4799999999999,859.25 1009.1999999999997,859.25 1009.1999999999997,988.5" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="763.8799999999999,391.25 840.9399999999998,391.25 840.9399999999998,691.75 1009.1999999999997,691.75 1009.1999999999997,670.5" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="320.63999999999993,133 320.63999999999993,133 320.63999999999993,594.125 395.3399999999999,594.125 395.3399999999999,667.75 470.0399999999999,667.75 470.0399999999999,520.5 395.3399999999999,520.5 395.3399999999999,226" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<polyline points="607.8799999999999,391.25 542.2599999999999,391.25 542.2599999999999,340.5 395.3399999999999,340.5 395.3399999999999,226" fill="none" stroke="var(--_line)" stroke-width="0.75" />
+<rect x="40" y="821.25" width="149.39999999999998" height="76" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+<rect x="40" y="821.25" width="149.39999999999998" height="32" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+<text x="114.69999999999999" y="837.25" text-anchor="middle" dy="0.35em" font-size="13" font-weight="700" fill="var(--_text)">COUNTRY</text>
+<line x1="40" y1="853.25" x2="189.39999999999998" y2="853.25" stroke="var(--_node-stroke)" stroke-width="0.75" />
+<rect x="46" y="857.25" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="55.22" y="864.25" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="72.44" y="864.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="181.39999999999998" y="864.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">COUNTRY</tspan></text>
+<text x="48" y="886.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="181.39999999999998" y="886.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">CURRENCY</tspan></text>
+<rect x="601.2799999999999" y="711.25" width="169.2" height="296" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+<rect x="601.2799999999999" y="711.25" width="169.2" height="32" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+<text x="685.8799999999999" y="727.25" text-anchor="middle" dy="0.35em" font-size="13" font-weight="700" fill="var(--_text)">CUSTOMER</text>
+<line x1="601.2799999999999" y1="743.25" x2="770.4799999999998" y2="743.25" stroke="var(--_node-stroke)" stroke-width="0.75" />
+<rect x="607.2799999999999" y="747.25" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="616.4999999999999" y="754.25" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="633.7199999999998" y="754.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="762.4799999999998" y="754.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">CUST_NO</tspan></text>
+<text x="609.2799999999999" y="776.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="776.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">CUSTOMER</tspan></text>
+<text x="609.2799999999999" y="798.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="798.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">CONTACT_FIRST</tspan></text>
+<text x="609.2799999999999" y="820.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="820.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">CONTACT_LAST</tspan></text>
+<text x="609.2799999999999" y="842.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="842.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PHONE_NO</tspan></text>
+<text x="609.2799999999999" y="864.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="864.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">ADDRESS_LINE1</tspan></text>
+<text x="609.2799999999999" y="886.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="886.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">ADDRESS_LINE2</tspan></text>
+<text x="609.2799999999999" y="908.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="908.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">CITY</tspan></text>
+<text x="609.2799999999999" y="930.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="930.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">STATE_PROVINCE</tspan></text>
+<text x="609.2799999999999" y="952.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="952.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">COUNTRY</tspan></text>
+<text x="609.2799999999999" y="974.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="974.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">POSTAL_CODE</tspan></text>
+<text x="609.2799999999999" y="996.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="762.4799999999998" y="996.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">ON_HOLD</tspan></text>
+<rect x="320.63999999999993" y="40" width="149.39999999999998" height="186" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+<rect x="320.63999999999993" y="40" width="149.39999999999998" height="32" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+<text x="395.3399999999999" y="56" text-anchor="middle" dy="0.35em" font-size="13" font-weight="700" fill="var(--_text)">DEPARTMENT</text>
+<line x1="320.63999999999993" y1="72" x2="470.0399999999999" y2="72" stroke="var(--_node-stroke)" stroke-width="0.75" />
+<rect x="326.63999999999993" y="76" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="335.8599999999999" y="83" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="353.0799999999999" y="83" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="462.0399999999999" y="83" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">DEPT_NO</tspan></text>
+<text x="328.63999999999993" y="105" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="462.0399999999999" y="105" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">DEPARTMENT</tspan></text>
+<text x="328.63999999999993" y="127" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="462.0399999999999" y="127" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">HEAD_DEPT</tspan></text>
+<text x="328.63999999999993" y="149" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="462.0399999999999" y="149" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">MNGR_NO</tspan></text>
+<text x="328.63999999999993" y="171" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">decimal</tspan></text>
+<text x="462.0399999999999" y="171" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">BUDGET</tspan></text>
+<text x="328.63999999999993" y="193" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="462.0399999999999" y="193" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">LOCATION</tspan></text>
+<text x="328.63999999999993" y="215" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="462.0399999999999" y="215" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PHONE_NO</tspan></text>
+<rect x="607.8799999999999" y="254.25" width="156" height="274" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+<rect x="607.8799999999999" y="254.25" width="156" height="32" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+<text x="685.8799999999999" y="270.25" text-anchor="middle" dy="0.35em" font-size="13" font-weight="700" fill="var(--_text)">EMPLOYEE</text>
+<line x1="607.8799999999999" y1="286.25" x2="763.8799999999999" y2="286.25" stroke="var(--_node-stroke)" stroke-width="0.75" />
+<rect x="613.8799999999999" y="290.25" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="623.0999999999999" y="297.25" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="640.3199999999999" y="297.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="755.8799999999999" y="297.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">EMP_NO</tspan></text>
+<text x="615.8799999999999" y="319.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="755.8799999999999" y="319.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">FIRST_NAME</tspan></text>
+<text x="615.8799999999999" y="341.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="755.8799999999999" y="341.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">LAST_NAME</tspan></text>
+<text x="615.8799999999999" y="363.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="755.8799999999999" y="363.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PHONE_EXT</tspan></text>
+<text x="615.8799999999999" y="385.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">timestamp</tspan></text>
+<text x="755.8799999999999" y="385.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">HIRE_DATE</tspan></text>
+<text x="615.8799999999999" y="407.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="755.8799999999999" y="407.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">DEPT_NO</tspan></text>
+<text x="615.8799999999999" y="429.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="755.8799999999999" y="429.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">JOB_CODE</tspan></text>
+<text x="615.8799999999999" y="451.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="755.8799999999999" y="451.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">JOB_GRADE</tspan></text>
+<text x="615.8799999999999" y="473.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="755.8799999999999" y="473.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">JOB_COUNTRY</tspan></text>
+<text x="615.8799999999999" y="495.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">decimal</tspan></text>
+<text x="755.8799999999999" y="495.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">SALARY</tspan></text>
+<text x="615.8799999999999" y="517.25" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="755.8799999999999" y="517.25" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">FULL_NAME</tspan></text>
+<rect x="1244.8399999999997" y="260.5" width="149.39999999999998" height="76" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+<rect x="1244.8399999999997" y="260.5" width="149.39999999999998" height="32" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+<text x="1319.5399999999997" y="276.5" text-anchor="middle" dy="0.35em" font-size="13" font-weight="700" fill="var(--_text)">EMPLOYEE_PROJECT</text>
+<line x1="1244.8399999999997" y1="292.5" x2="1394.2399999999998" y2="292.5" stroke="var(--_node-stroke)" stroke-width="0.75" />
+<rect x="1250.8399999999997" y="296.5" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="1260.0599999999997" y="303.5" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="1277.2799999999997" y="303.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="1386.2399999999998" y="303.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">EMP_NO</tspan></text>
+<rect x="1250.8399999999997" y="318.5" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="1260.0599999999997" y="325.5" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="1277.2799999999997" y="325.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1386.2399999999998" y="325.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PROJ_ID</tspan></text>
+<rect x="307.43999999999994" y="829" width="175.79999999999998" height="208" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+<rect x="307.43999999999994" y="829" width="175.79999999999998" height="32" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+<text x="395.3399999999999" y="845" text-anchor="middle" dy="0.35em" font-size="13" font-weight="700" fill="var(--_text)">JOB</text>
+<line x1="307.43999999999994" y1="861" x2="483.2399999999999" y2="861" stroke="var(--_node-stroke)" stroke-width="0.75" />
+<rect x="313.43999999999994" y="865" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="322.65999999999997" y="872" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="339.87999999999994" y="872" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="475.2399999999999" y="872" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">JOB_CODE</tspan></text>
+<rect x="313.43999999999994" y="887" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="322.65999999999997" y="894" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="339.87999999999994" y="894" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="475.2399999999999" y="894" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">JOB_GRADE</tspan></text>
+<rect x="313.43999999999994" y="909" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="322.65999999999997" y="916" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="339.87999999999994" y="916" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="475.2399999999999" y="916" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">JOB_COUNTRY</tspan></text>
+<text x="315.43999999999994" y="938" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="475.2399999999999" y="938" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">JOB_TITLE</tspan></text>
+<text x="315.43999999999994" y="960" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">decimal</tspan></text>
+<text x="475.2399999999999" y="960" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">MIN_SALARY</tspan></text>
+<text x="315.43999999999994" y="982" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">decimal</tspan></text>
+<text x="475.2399999999999" y="982" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">MAX_SALARY</tspan></text>
+<text x="315.43999999999994" y="1004" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="475.2399999999999" y="1004" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">JOB_REQUIREMENT</tspan></text>
+<text x="315.43999999999994" y="1026" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="475.2399999999999" y="1026" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">LANGUAGE_REQ</tspan></text>
+<rect x="934.4999999999998" y="194.5" width="149.39999999999998" height="142" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+<rect x="934.4999999999998" y="194.5" width="149.39999999999998" height="32" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+<text x="1009.1999999999998" y="210.5" text-anchor="middle" dy="0.35em" font-size="13" font-weight="700" fill="var(--_text)">PROJECT</text>
+<line x1="934.4999999999998" y1="226.5" x2="1083.8999999999996" y2="226.5" stroke="var(--_node-stroke)" stroke-width="0.75" />
+<rect x="940.4999999999998" y="230.5" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="949.7199999999998" y="237.5" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="966.9399999999998" y="237.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1075.8999999999996" y="237.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PROJ_ID</tspan></text>
+<text x="942.4999999999998" y="259.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1075.8999999999996" y="259.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PROJ_NAME</tspan></text>
+<text x="942.4999999999998" y="281.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1075.8999999999996" y="281.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PROJ_DESC</tspan></text>
+<text x="942.4999999999998" y="303.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="1075.8999999999996" y="303.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">TEAM_LEADER</tspan></text>
+<text x="942.4999999999998" y="325.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1075.8999999999996" y="325.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PRODUCT</tspan></text>
+<rect x="1225.0399999999997" y="62" width="189" height="142" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+<rect x="1225.0399999999997" y="62" width="189" height="32" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+<text x="1319.5399999999997" y="78" text-anchor="middle" dy="0.35em" font-size="13" font-weight="700" fill="var(--_text)">PROJ_DEPT_BUDGET</text>
+<line x1="1225.0399999999997" y1="94" x2="1414.0399999999997" y2="94" stroke="var(--_node-stroke)" stroke-width="0.75" />
+<rect x="1231.0399999999997" y="98" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="1240.2599999999998" y="105" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="1257.4799999999998" y="105" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="1406.0399999999997" y="105" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">FISCAL_YEAR</tspan></text>
+<rect x="1231.0399999999997" y="120" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="1240.2599999999998" y="127" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="1257.4799999999998" y="127" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1406.0399999999997" y="127" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PROJ_ID</tspan></text>
+<rect x="1231.0399999999997" y="142" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="1240.2599999999998" y="149" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="1257.4799999999998" y="149" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1406.0399999999997" y="149" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">DEPT_NO</tspan></text>
+<text x="1233.0399999999997" y="171" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="1406.0399999999997" y="171" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">QUART_HEAD_CNT</tspan></text>
+<text x="1233.0399999999997" y="193" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">decimal</tspan></text>
+<text x="1406.0399999999997" y="193" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PROJECTED_BUDGET</tspan></text>
+<rect x="911.3999999999997" y="445.75" width="195.6" height="164" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+<rect x="911.3999999999997" y="445.75" width="195.6" height="32" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+<text x="1009.1999999999997" y="461.75" text-anchor="middle" dy="0.35em" font-size="13" font-weight="700" fill="var(--_text)">SALARY_HISTORY</text>
+<line x1="911.3999999999997" y1="477.75" x2="1106.9999999999998" y2="477.75" stroke="var(--_node-stroke)" stroke-width="0.75" />
+<rect x="917.3999999999997" y="481.75" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="926.6199999999998" y="488.75" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="943.8399999999997" y="488.75" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="1098.9999999999998" y="488.75" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">EMP_NO</tspan></text>
+<rect x="917.3999999999997" y="503.75" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="926.6199999999998" y="510.75" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="943.8399999999997" y="510.75" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">timestamp</tspan></text>
+<text x="1098.9999999999998" y="510.75" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">CHANGE_DATE</tspan></text>
+<rect x="917.3999999999997" y="525.75" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="926.6199999999998" y="532.75" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="943.8399999999997" y="532.75" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1098.9999999999998" y="532.75" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">UPDATER_ID</tspan></text>
+<text x="919.3999999999997" y="554.75" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">decimal</tspan></text>
+<text x="1098.9999999999998" y="554.75" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">OLD_SALARY</tspan></text>
+<text x="919.3999999999997" y="576.75" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">decimal</tspan></text>
+<text x="1098.9999999999998" y="576.75" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PERCENT_CHANGE</tspan></text>
+<text x="919.3999999999997" y="598.75" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="1098.9999999999998" y="598.75" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">NEW_SALARY</tspan></text>
+<rect x="924.5999999999997" y="670.5" width="169.2" height="318" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+<rect x="924.5999999999997" y="670.5" width="169.2" height="32" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+<text x="1009.1999999999997" y="686.5" text-anchor="middle" dy="0.35em" font-size="13" font-weight="700" fill="var(--_text)">SALES</text>
+<line x1="924.5999999999997" y1="702.5" x2="1093.7999999999997" y2="702.5" stroke="var(--_node-stroke)" stroke-width="0.75" />
+<rect x="930.5999999999997" y="706.5" width="18.439999999999998" height="14" rx="2" ry="2" fill="var(--_key-badge)" />
+<text x="939.8199999999997" y="713.5" text-anchor="middle" dy="0.35em" font-size="9" font-weight="600" fill="var(--_text-sec)">PK</text>
+<text x="957.0399999999997" y="713.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1085.7999999999997" y="713.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PO_NUMBER</tspan></text>
+<text x="932.5999999999997" y="735.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="1085.7999999999997" y="735.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">CUST_NO</tspan></text>
+<text x="932.5999999999997" y="757.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="1085.7999999999997" y="757.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">SALES_REP</tspan></text>
+<text x="932.5999999999997" y="779.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1085.7999999999997" y="779.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">ORDER_STATUS</tspan></text>
+<text x="932.5999999999997" y="801.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">timestamp</tspan></text>
+<text x="1085.7999999999997" y="801.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">ORDER_DATE</tspan></text>
+<text x="932.5999999999997" y="823.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">timestamp</tspan></text>
+<text x="1085.7999999999997" y="823.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">SHIP_DATE</tspan></text>
+<text x="932.5999999999997" y="845.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">timestamp</tspan></text>
+<text x="1085.7999999999997" y="845.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">DATE_NEEDED</tspan></text>
+<text x="932.5999999999997" y="867.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1085.7999999999997" y="867.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">PAID</tspan></text>
+<text x="932.5999999999997" y="889.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="1085.7999999999997" y="889.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">QTY_ORDERED</tspan></text>
+<text x="932.5999999999997" y="911.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">decimal</tspan></text>
+<text x="1085.7999999999997" y="911.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">TOTAL_VALUE</tspan></text>
+<text x="932.5999999999997" y="933.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">int</tspan></text>
+<text x="1085.7999999999997" y="933.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">DISCOUNT</tspan></text>
+<text x="932.5999999999997" y="955.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">string</tspan></text>
+<text x="1085.7999999999997" y="955.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">ITEM_TYPE</tspan></text>
+<text x="932.5999999999997" y="977.5" class="mono" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-muted)">decimal</tspan></text>
+<text x="1085.7999999999997" y="977.5" class="mono" text-anchor="end" dy="0.35em" font-size="11" font-weight="400"><tspan fill="var(--_text-sec)">AGED</tspan></text>
+<line x1="193.39999999999998" y1="853.25" x2="193.39999999999998" y2="865.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="197.39999999999998" y1="853.25" x2="197.39999999999998" y2="865.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="692.8799999999999" y1="715.25" x2="685.8799999999999" y2="727.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="685.8799999999999" y1="715.25" x2="685.8799999999999" y2="727.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="678.8799999999999" y1="715.25" x2="685.8799999999999" y2="727.25" stroke="var(--_line)" stroke-width="1" />
+<circle cx="685.8799999999999" cy="731.25" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="193.39999999999998" y1="853.25" x2="193.39999999999998" y2="865.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="197.39999999999998" y1="853.25" x2="197.39999999999998" y2="865.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="303.43999999999994" y1="940" x2="291.43999999999994" y2="933" stroke="var(--_line)" stroke-width="1" />
+<line x1="303.43999999999994" y1="933" x2="291.43999999999994" y2="933" stroke="var(--_line)" stroke-width="1" />
+<line x1="303.43999999999994" y1="926" x2="291.43999999999994" y2="933" stroke="var(--_line)" stroke-width="1" />
+<circle cx="287.43999999999994" cy="933" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="474.0399999999999" y1="127" x2="474.0399999999999" y2="139" stroke="var(--_line)" stroke-width="1" />
+<line x1="478.0399999999999" y1="127" x2="478.0399999999999" y2="139" stroke="var(--_line)" stroke-width="1" />
+<line x1="678.8799999999999" y1="250.25" x2="685.8799999999999" y2="238.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="685.8799999999999" y1="250.25" x2="685.8799999999999" y2="238.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="692.8799999999999" y1="250.25" x2="685.8799999999999" y2="238.25" stroke="var(--_line)" stroke-width="1" />
+<circle cx="685.8799999999999" cy="234.25" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="487.2399999999999" y1="927" x2="487.2399999999999" y2="939" stroke="var(--_line)" stroke-width="1" />
+<line x1="491.2399999999999" y1="927" x2="491.2399999999999" y2="939" stroke="var(--_line)" stroke-width="1" />
+<line x1="692.8799999999999" y1="532.25" x2="685.8799999999999" y2="544.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="685.8799999999999" y1="532.25" x2="685.8799999999999" y2="544.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="678.8799999999999" y1="532.25" x2="685.8799999999999" y2="544.25" stroke="var(--_line)" stroke-width="1" />
+<circle cx="685.8799999999999" cy="548.25" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="767.8799999999999" y1="385.25" x2="767.8799999999999" y2="397.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="771.8799999999999" y1="385.25" x2="771.8799999999999" y2="397.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="930.4999999999998" y1="272.5" x2="918.4999999999998" y2="265.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="930.4999999999998" y1="265.5" x2="918.4999999999998" y2="265.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="930.4999999999998" y1="258.5" x2="918.4999999999998" y2="265.5" stroke="var(--_line)" stroke-width="1" />
+<circle cx="914.4999999999998" cy="265.5" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="767.8799999999999" y1="385.25" x2="767.8799999999999" y2="397.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="771.8799999999999" y1="385.25" x2="771.8799999999999" y2="397.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="1326.5399999999997" y1="340.5" x2="1319.5399999999997" y2="352.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1319.5399999999997" y1="340.5" x2="1319.5399999999997" y2="352.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1312.5399999999997" y1="340.5" x2="1319.5399999999997" y2="352.5" stroke="var(--_line)" stroke-width="1" />
+<circle cx="1319.5399999999997" cy="356.5" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="1087.8999999999996" y1="259.5" x2="1087.8999999999996" y2="271.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1091.8999999999996" y1="259.5" x2="1091.8999999999996" y2="271.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1312.5399999999997" y1="256.5" x2="1319.5399999999997" y2="244.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1319.5399999999997" y1="256.5" x2="1319.5399999999997" y2="244.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1326.5399999999997" y1="256.5" x2="1319.5399999999997" y2="244.5" stroke="var(--_line)" stroke-width="1" />
+<circle cx="1319.5399999999997" cy="240.5" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="474.0399999999999" y1="127" x2="474.0399999999999" y2="139" stroke="var(--_line)" stroke-width="1" />
+<line x1="478.0399999999999" y1="127" x2="478.0399999999999" y2="139" stroke="var(--_line)" stroke-width="1" />
+<line x1="1221.0399999999997" y1="140" x2="1209.0399999999997" y2="133" stroke="var(--_line)" stroke-width="1" />
+<line x1="1221.0399999999997" y1="133" x2="1209.0399999999997" y2="133" stroke="var(--_line)" stroke-width="1" />
+<line x1="1221.0399999999997" y1="126" x2="1209.0399999999997" y2="133" stroke="var(--_line)" stroke-width="1" />
+<circle cx="1205.0399999999997" cy="133" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="1087.8999999999996" y1="259.5" x2="1087.8999999999996" y2="271.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1091.8999999999996" y1="259.5" x2="1091.8999999999996" y2="271.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1326.5399999999997" y1="208" x2="1319.5399999999997" y2="220" stroke="var(--_line)" stroke-width="1" />
+<line x1="1319.5399999999997" y1="208" x2="1319.5399999999997" y2="220" stroke="var(--_line)" stroke-width="1" />
+<line x1="1312.5399999999997" y1="208" x2="1319.5399999999997" y2="220" stroke="var(--_line)" stroke-width="1" />
+<circle cx="1319.5399999999997" cy="224" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="767.8799999999999" y1="385.25" x2="767.8799999999999" y2="397.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="771.8799999999999" y1="385.25" x2="771.8799999999999" y2="397.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="907.3999999999997" y1="534.75" x2="895.3999999999997" y2="527.75" stroke="var(--_line)" stroke-width="1" />
+<line x1="907.3999999999997" y1="527.75" x2="895.3999999999997" y2="527.75" stroke="var(--_line)" stroke-width="1" />
+<line x1="907.3999999999997" y1="520.75" x2="895.3999999999997" y2="527.75" stroke="var(--_line)" stroke-width="1" />
+<circle cx="891.3999999999997" cy="527.75" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="774.4799999999999" y1="853.25" x2="774.4799999999999" y2="865.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="778.4799999999999" y1="853.25" x2="778.4799999999999" y2="865.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="1002.1999999999997" y1="984.5" x2="1009.1999999999997" y2="972.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1009.1999999999997" y1="984.5" x2="1009.1999999999997" y2="972.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1016.1999999999997" y1="984.5" x2="1009.1999999999997" y2="972.5" stroke="var(--_line)" stroke-width="1" />
+<circle cx="1009.1999999999997" cy="968.5" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="767.8799999999999" y1="385.25" x2="767.8799999999999" y2="397.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="771.8799999999999" y1="385.25" x2="771.8799999999999" y2="397.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="1016.1999999999997" y1="674.5" x2="1009.1999999999997" y2="686.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1009.1999999999997" y1="674.5" x2="1009.1999999999997" y2="686.5" stroke="var(--_line)" stroke-width="1" />
+<line x1="1002.1999999999997" y1="674.5" x2="1009.1999999999997" y2="686.5" stroke="var(--_line)" stroke-width="1" />
+<circle cx="1009.1999999999997" cy="690.5" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+
+<line x1="402.3399999999999" y1="230" x2="395.3399999999999" y2="242" stroke="var(--_line)" stroke-width="1" />
+<line x1="395.3399999999999" y1="230" x2="395.3399999999999" y2="242" stroke="var(--_line)" stroke-width="1" />
+<line x1="388.3399999999999" y1="230" x2="395.3399999999999" y2="242" stroke="var(--_line)" stroke-width="1" />
+<circle cx="395.3399999999999" cy="246" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<line x1="603.8799999999999" y1="397.25" x2="603.8799999999999" y2="385.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="599.8799999999999" y1="397.25" x2="599.8799999999999" y2="385.25" stroke="var(--_line)" stroke-width="1" />
+<line x1="402.3399999999999" y1="230" x2="395.3399999999999" y2="242" stroke="var(--_line)" stroke-width="1" />
+<line x1="395.3399999999999" y1="230" x2="395.3399999999999" y2="242" stroke="var(--_line)" stroke-width="1" />
+<line x1="388.3399999999999" y1="230" x2="395.3399999999999" y2="242" stroke="var(--_line)" stroke-width="1" />
+<circle cx="395.3399999999999" cy="246" r="4" fill="var(--bg)" stroke="var(--_line)" stroke-width="1" />
+<rect x="413.86999999999995" y="777" width="48.04" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="437.88999999999993" y="785.5" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">COUNTRY</text>
+<rect x="224.39999999999998" y="887.625" width="48.04" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="248.42" y="896.125" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">COUNTRY</text>
+<rect x="614.5649999999999" y="96" width="48.04" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="638.5849999999999" y="104.5" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">DEPT_NO</text>
+<rect x="673.2999999999998" y="823.4449999999999" width="25.16" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="685.8799999999999" y="831.9449999999999" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">JOB</text>
+<rect x="805.4799999999998" y="311.625" width="70.92" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="840.9399999999998" y="320.125" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">TEAM_LEADER</text>
+<rect x="1047.9249999999997" y="393.75" width="42.32" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="1069.0849999999998" y="402.25" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">EMP_NO</text>
+<rect x="1175.1999999999998" y="218.25" width="48.04" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="1199.2199999999998" y="226.75" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">PROJ_ID</text>
+<rect x="823.5199999999998" y="124.5" width="48.04" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="847.5399999999997" y="133" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">DEPT_NO</text>
+<rect x="1208.4499999999998" y="300" width="48.04" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="1232.4699999999998" y="308.5" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">PROJ_ID</text>
+<rect x="819.7799999999999" y="447.7" width="42.32" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="840.9399999999998" y="456.2" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">EMP_NO</text>
+<rect x="930.4449999999998" y="850.75" width="48.04" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="954.4649999999998" y="859.25" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">CUST_NO</text>
+<rect x="811.1999999999998" y="589.2249999999999" width="59.480000000000004" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="840.9399999999998" y="597.7249999999999" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">SALES_REP</text>
+<rect x="365.5999999999999" y="650.1" width="59.480000000000004" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="395.3399999999999" y="658.6" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">HEAD_DEPT</text>
+<rect x="445.7149999999999" y="332" width="48.04" height="17" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="0.5" />
+<text x="469.7349999999999" y="340.5" text-anchor="middle" dy="0.35em" font-size="11" font-weight="400" fill="var(--_text-muted)">MNGR_NO</text>
+</svg>

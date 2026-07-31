@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-label="Top 10 customers by total sales value">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { fill: #0f172a; font: 700 28px Inter, Segoe UI, Arial, sans-serif; }
+      .subtitle { fill: #475569; font: 14px Inter, Segoe UI, Arial, sans-serif; }
+      .axis { stroke: #cbd5e1; stroke-width: 1; }
+      .grid { stroke: #e2e8f0; stroke-width: 1; }
+      .label { fill: #0f172a; font: 13px Inter, Segoe UI, Arial, sans-serif; }
+      .value { fill: #0f172a; font: 12px Inter, Segoe UI, Arial, sans-serif; }
+      .tick { fill: #64748b; font: 12px Inter, Segoe UI, Arial, sans-serif; }
+      .bar { fill: #38bdf8; }
+      .bar2 { fill: #0ea5e9; }
+      .frame { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.2; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="820"/>
+  <rect class="frame" x="20" y="20" width="1360" height="780" rx="20" ry="20"/>
+
+  <text class="title" x="60" y="70">Top 10 Customers by Total Sales Value</text>
+  <text class="subtitle" x="60" y="95">Source: InterBase query result, sorted descending by SUM(sales.total_value)</text>
+
+  <!-- Chart area -->
+  <!-- Layout constants: left=320, top=140, rowHeight=56, maxWidth=860 -->
+  <g transform="translate(0,0)">
+    <line class="axis" x1="320" y1="140" x2="320" y2="700"/>
+    <line class="axis" x1="320" y1="700" x2="1240" y2="700"/>
+
+    <text class="tick" x="312" y="728" text-anchor="end">0</text>
+    <text class="tick" x="497" y="728" text-anchor="middle">250k</text>
+    <text class="tick" x="682" y="728" text-anchor="middle">500k</text>
+    <text class="tick" x="867" y="728" text-anchor="middle">750k</text>
+    <text class="tick" x="1052" y="728" text-anchor="middle">1.0M</text>
+    <text class="tick" x="1237" y="728" text-anchor="end">1.25M</text>
+
+    <line class="grid" x1="320" y1="140" x2="320" y2="700"/>
+    <line class="grid" x1="505" y1="140" x2="505" y2="700"/>
+    <line class="grid" x1="690" y1="140" x2="690" y2="700"/>
+    <line class="grid" x1="875" y1="140" x2="875" y2="700"/>
+    <line class="grid" x1="1060" y1="140" x2="1060" y2="700"/>
+    <line class="grid" x1="1245" y1="140" x2="1245" y2="700"/>
+
+    <!-- 1 -->
+    <text class="label" x="300" y="173" text-anchor="end">Signature Design</text>
+    <rect class="bar" x="320" y="152" width="860" height="28" rx="8"/>
+    <text class="value" x="1190" y="171">1,045,610.12</text>
+
+    <!-- 2 -->
+    <text class="label" x="300" y="229" text-anchor="end">3D-Pad Corp.</text>
+    <rect class="bar2" x="320" y="208" width="381" height="28" rx="8"/>
+    <text class="value" x="711" y="227">463,000.47</text>
+
+    <!-- 3 -->
+    <text class="label" x="300" y="285" text-anchor="end">DataServe International</text>
+    <rect class="bar" x="320" y="264" width="329" height="28" rx="8"/>
+    <text class="value" x="659" y="283">400,008.00</text>
+
+    <!-- 4 -->
+    <text class="label" x="300" y="341" text-anchor="end">Dynamic Intelligence Corp</text>
+    <rect class="bar2" x="320" y="320" width="100" height="28" rx="8"/>
+    <text class="value" x="430" y="339">121,980.72</text>
+
+    <!-- 5 -->
+    <text class="label" x="300" y="397" text-anchor="end">Central Bank</text>
+    <rect class="bar" x="320" y="376" width="62" height="28" rx="8"/>
+    <text class="value" x="392" y="395">75,000.00</text>
+
+    <!-- 6 -->
+    <text class="label" x="300" y="453" text-anchor="end">Buttle, Griffith and Co.</text>
+    <rect class="bar2" x="320" y="432" width="33" height="28" rx="8"/>
+    <text class="value" x="363" y="451">39,582.12</text>
+
+    <!-- 7 -->
+    <text class="label" x="300" y="509" text-anchor="end">Dallas Technologies</text>
+    <rect class="bar" x="320" y="488" width="29" height="28" rx="8"/>
+    <text class="value" x="359" y="507">35,450.50</text>
+
+    <!-- 8 -->
+    <text class="label" x="300" y="565" text-anchor="end">Anini Vacation Rentals</text>
+    <rect class="bar2" x="320" y="544" width="21" height="28" rx="8"/>
+    <text class="value" x="351" y="563">25,000.00</text>
+
+    <!-- 9 -->
+    <text class="label" x="300" y="621" text-anchor="end">MPM Corporation</text>
+    <rect class="bar" x="320" y="600" width="17" height="28" rx="8"/>
+    <text class="value" x="347" y="619">21,195.40</text>
+
+    <!-- 10 -->
+    <text class="label" x="300" y="677" text-anchor="end">DT Systems, LTD.</text>
+    <rect class="bar2" x="320" y="656" width="12" height="28" rx="8"/>
+    <text class="value" x="342" y="675">14,980.00</text>
+  </g>
+</svg>
