@@ -117,7 +117,7 @@ If you want to deploy without compiling, download the v1.0 release assets direct
 
 Building locally allows you to extend tools, customize server logic, or contribute back to the project.
 
-1. Install Prerequisites: Install Delphi 13.0 (or newer) and install the [Dext framework]([GitHub - cesarliws/dext: Dext - Modern Full Stack Framework for Delphi · GitHub](https://github.com/cesarliws/dext)) (recommended via [TMS Smart Setup](https://github.com/tmssoftware/smartsetup/)).
+1. Install Prerequisites: Install Delphi 13.0 (or newer) and install the [Dext framework](https://github.com/cesarliws/dext) (recommended via [TMS Smart Setup](https://github.com/tmssoftware/smartsetup/)).
 
 2. Clone the Repository:  
    git clone https://github.com/Embarcadero/InterbaseMCP.git
