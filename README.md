@@ -12,58 +12,121 @@ The InterBase Model Context Protocol (MCP) Server provides a powerful, AI-ready 
 
 ## Features
 
-This server provides the following categories of tools:
+This server exposes **30 MCP tools** across five categories:
 
 ### 🔍 Schema Introspection
 
 Deeply analyze your database structure.
 
-* **`get_database_info`**: Retrieve high-level database metrics and configuration.
-* **`get_tables`, `get_views`**: List available tables and views.
-* **`get_columns`, `get_indexes`, `get_foreign_keys`, `get_check_constraints`**: Inspect table structures and constraints.
-* **`get_stored_procedures`, `get_triggers`, `get_functions`**: Retrieve the source code and metadata of business logic objects.
-* **`get_generators`, `get_exceptions`, `get_domains`**: Inspect other database objects.
+| Tool                    | Description                                                                         |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| `get_database_info`     | Retrieve high-level database metrics and configuration.                             |
+| `get_tables`            | List all user tables in the database.                                               |
+| `get_views`             | List all views with their source SQL.                                               |
+| `get_columns`           | Inspect the columns for a given table.                                              |
+| `get_indexes`           | Inspect the indexes defined on a given table.                                       |
+| `get_foreign_keys`      | Inspect foreign key constraints for a given table.                                  |
+| `get_check_constraints` | List all check constraints in the database.                                         |
+| `get_stored_procedures` | Retrieve stored procedure source code and metadata (supports optional name filter). |
+| `get_triggers`          | Retrieve trigger source code and metadata (supports optional table filter).         |
+| `get_functions`         | Inspect user-defined functions (UDFs).                                              |
+| `get_generators`        | Inspect generators and sequences.                                                   |
+| `get_exceptions`        | Inspect named exceptions.                                                           |
+| `get_domains`           | Inspect custom domain definitions.                                                  |
 
 ### ⚡ Query Execution
 
 Run queries and analyze performance.
 
-* **`execute_sql`**: Execute `SELECT` queries (or write operations, if explicitly permitted).
-* **`execute_procedure`**: Safely execute stored procedures.
-* **`explain_plan`**: Retrieve the InterBase execution plan to optimize query performance.
+| Tool                | Description                                                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `open_cursor`       | Execute a **read-only `SELECT`** query and return the resulting dataset.                                                                   |
+| `execute_sql`       | Execute a **non-query SQL statement** (`INSERT`, `UPDATE`, `DELETE`, or DDL). Requires CRUD or DBA access depending on the statement type. |
+| `execute_procedure` | Execute an InterBase stored procedure by name with optional input parameters.                                                              |
+| `explain_plan`      | Retrieve the InterBase execution plan for a query to analyse performance and index usage.                                                  |
 
 ### 📈 Performance & Monitoring
 
-Monitor real-time database activity.
+Monitor real-time database activity via InterBase monitoring views.
 
-* **`stat_attachments`, `stat_database`, `stat_transactions`**: Monitor connections and transaction states.
-* **`stat_statements`, `stat_procedures`, `stat_triggers`**: Monitor executing statements and cached logic.
-* **`stat_pools`, `stat_pool_blocks`, `stat_heaps`, `stat_indices`, `stat_relations`**: Monitor memory usage and cache statistics.
+| Tool                | Description                                                       |
+| ------------------- | ----------------------------------------------------------------- |
+| `stat_attachments`  | One row per active connection to the database.                    |
+| `stat_database`     | One row per database you are attached to.                         |
+| `stat_transactions` | One row per active or in-limbo transaction.                       |
+| `stat_statements`   | One row per statement currently executing across all connections. |
+| `stat_procedures`   | One row per stored procedure loaded into the database cache.      |
+| `stat_triggers`     | One row per trigger loaded into the database cache.               |
+| `stat_pools`        | One row per active memory pool.                                   |
+| `stat_pool_blocks`  | One row per block of memory within each pool.                     |
+| `stat_heaps`        | One row per entry in the InterBase random and block heap.         |
+| `stat_indices`      | One row per index loaded into the database cache.                 |
+| `stat_relations`    | One row per relation (table) loaded into the database cache.      |
 
 ### 🛡️ Security & Auditing
 
 Manage privileges and review audit logs.
 
-* **`validate_sql`**: Verify if a SQL statement is safe to run according to server policies.
-* **`get_user_privileges`, `list_roles`, `get_role_members`**: Inspect database security rules and access control.
-* **`get_audit_log`**: Read the server's internal audit log of executed tools and events.
+| Tool                  | Description                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `get_user_privileges` | List all privileges granted to a specific user.                                                                    |
+| `list_roles`          | List all user-defined roles in the database.                                                                       |
+| `get_role_members`    | List members of a role (supports optional role name filter).                                                       |
+| `get_audit_log`       | Read today's tool-execution audit log with support for filtering by `tool_name`, `outcome`, `offset`, and `limit`. |
 
 ### 🧰 Database Management
 
-Execute DBA-level tasks asynchronously.
+Execute DBA-level maintenance tasks. All tools in this category require **DBA** access.
 
-* **`backup_database`, `restore_database`**: Automate database backups and restores.
-* **`validate_database`, `sweep_database`**: Perform database maintenance tasks.
+| Tool                | Description                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| `backup_database`   | Run an InterBase backup to a specified file path.                                       |
+| `restore_database`  | Restore a database from a backup file to a target path (supports optional `page_size`). |
+| `validate_database` | Validate database integrity; pass `repair=true` to attempt corruption repair.           |
+| `sweep_database`    | Run an InterBase sweep to reclaim storage from old record versions.                     |
 
 ---
 
-## Installation
+Installation Options
+--------------------
 
-This project has been tested with **Delphi 13.0 and newer versions** and has a strict dependency on the **DEXT framework**.
+Whether you want to get up and running instantly or customize the server code in Delphi, you have two flexible path options:
 
-1. **Install DEXT**: You must install the DEXT framework first. It is highly recommended to do this using [TMS Smart Setup](https://github.com/tmssoftware/smartsetup/).
-2. **Get the Source**: Clone this repository or download the source code files.
-3. **Build**: Open the project in RAD Studio / Delphi and build the executable.
+
+
+### Option A: Pre-built Releases (Quickest)
+
+If you want to deploy without compiling, download the v1.0 release assets directly from the GitHub Releases page.
+
+* Requirements: InterBase must be installed on the system (at a minimum, the InterBase Client DLLs / libraries are required to establish database connections).
+
+* Available Packages:
+
+* 🪟 Windows (x64): mcp_interbase-win64-v1.0.zip
+
+* 🐧 Linux (x86_64): mcp_interbase-linux-x86-64-v1.0.zip
+
+* ⚙️ Configuration Template: mcp_interbase.template.ini
+1. Download and extract the zip archive for your platform.
+
+2. Rename mcp_interbase.template.ini to mcp_interbase.ini in the binary directory.
+
+3. Edit the INI file to set your database path, credentials, and port.
+
+### Option B: Build locally with Delphi (Recommended for Developers)
+
+Building locally allows you to extend tools, customize server logic, or contribute back to the project.
+
+1. Install Prerequisites: Install Delphi 13.0 (or newer) and install the [Dext framework]([GitHub - cesarliws/dext: Dext - Modern Full Stack Framework for Delphi · GitHub](https://github.com/cesarliws/dext)) (recommended via [TMS Smart Setup](https://github.com/tmssoftware/smartsetup/)).
+
+2. Clone the Repository:  
+   git clone https://github.com/Embarcadero/InterbaseMCP.git
+
+3. Build: Open the project in RAD Studio / Delphi and compile the executable.
+   
+   
+
+**Important:** The InterBase MCP is designed for InterBase Server, though it also works seamlessly with InterBase Developer for local testing. If you don't have InterBase running yet, you can request a trial license for the Server edition at [embarcadero.com/products/interbase](https://www.embarcadero.com/products/interbase).
 
 ---
 
@@ -109,8 +172,8 @@ Below is an overview of the required and optional parameters:
 ### `[Logging]`
 
 * **`AuditPath`** (Default: `logs/audit.jsonl`): The path where the server writes tool execution audit logs.
-
-
+  
+  
 
 * * *
 
