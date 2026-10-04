@@ -3,11 +3,12 @@ unit IB.MCP.Management;
 interface
 
 uses
-  System.JSON,
   Dext.AI.MCP.Attributes,
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
   Dext.AI.MCP.Types,
+  Dext.Core.Json.NextGen,
+  Dext.Json.Types,
   IB.MCP.AuditLogger,
   IB.MCP.Settings;
 
@@ -20,7 +21,7 @@ type
     FSettings: TIBMCPSettings;
     FAudit: TIBMCPAuditLogger;
     function BuildResult(const AOperation, AStatus: string; AElapsedMilliseconds: Int64;
-    ALogs: TJSONArray; const AErrorMessage: string = ''): TMCPToolResult;
+      ALogs: TJsonArray; const AErrorMessage: string = ''): TMCPToolResult;
   public
     constructor Create; overload;
     destructor Destroy; override;
@@ -30,7 +31,7 @@ type
     /// </summary>
     [MCPTool('backup_database', 'Run an InterBase backup task')]
     [MCPParam('backup_file', 'Backup file path')]
-    function BackupDatabase(const Args: TJSONObject): TMCPToolResult; virtual;
+    function BackupDatabase(const Args: TJsonObject): TMCPToolResult; virtual;
 
     /// <summary>
     /// Runs an InterBase restore.
@@ -39,20 +40,20 @@ type
     [MCPParam('backup_file', 'Backup file path')]
     [MCPParam('target_database', 'Target database path')]
     [MCPParam('page_size', 'Optional page size', ptInteger, False)]
-    function RestoreDatabase(const Args: TJSONObject): TMCPToolResult; virtual;
+    function RestoreDatabase(const Args: TJsonObject): TMCPToolResult; virtual;
 
     /// <summary>
     /// Runs an InterBase validation.
     /// </summary>
     [MCPTool('validate_database', 'Run an InterBase validation task')]
     [MCPParam('repair', 'Attempt to repair corruption if found', ptBoolean, False)]
-    function ValidateDatabase(const Args: TJSONObject): TMCPToolResult; virtual;
+    function ValidateDatabase(const Args: TJsonObject): TMCPToolResult; virtual;
 
     /// <summary>
     /// Runs an InterBase sweep.
     /// </summary>
     [MCPTool('sweep_database', 'Run an InterBase sweep task')]
-    function SweepDatabase(const Args: TJSONObject): TMCPToolResult; virtual;
+    function SweepDatabase(const Args: TJsonObject): TMCPToolResult; virtual;
   end;
 
 implementation
@@ -105,48 +106,62 @@ begin
 end;
 
 function TIBMCPManagementTools.BuildResult(const AOperation, AStatus: string; AElapsedMilliseconds: Int64;
-  ALogs: TJSONArray; const AErrorMessage: string): TMCPToolResult;
+  ALogs: TJsonArray; const AErrorMessage: string): TMCPToolResult;
 var
-  LJson: TJSONObject;
+  LJson: TJsonObject;
+  LParsed: TJsonBaseObject;
+  LClonedLogs: TJsonArray;
 begin
-  LJson := TJSONObject.Create;
+  LJson := TJsonObject.Create;
   try
-    LJson.AddPair('operation', AOperation);
-    LJson.AddPair('status', AStatus);
-    LJson.AddPair('elapsed_ms', TJSONNumber.Create(AElapsedMilliseconds));
+    LJson.S['operation'] := AOperation;
+    LJson.S['status'] := AStatus;
+    LJson.L['elapsed_ms'] := AElapsedMilliseconds;
     if AErrorMessage <> '' then
-      LJson.AddPair('error_message', AErrorMessage);
+      LJson.S['error_message'] := AErrorMessage;
     if Assigned(ALogs) then
-      LJson.AddPair('logs', ALogs.Clone as TJSONValue);
-    Result := TMCPToolResult.Text(LJson.ToJSON);
+    begin
+      { Clone via Parse so caller retains ownership of ALogs (same contract as
+        System.JSON's TJSONArray.Clone). }
+      LParsed := TJsonBaseObject.Parse(ALogs.ToJson);
+      if LParsed is TJsonArray then
+        LClonedLogs := TJsonArray(LParsed)
+      else
+      begin
+        LParsed.Free;
+        LClonedLogs := TJsonArray.Create;
+      end;
+      LJson.A['logs'] := LClonedLogs;
+    end;
+    Result := TMCPToolResult.Text(LJson.ToJson);
   finally
     LJson.Free;
   end;
 end;
 
-function LogsToJSONArray(ALogs: TStrings): TJSONArray;
+function LogsToJSONArray(ALogs: TStrings): TJsonArray;
 var
   I: Integer;
 begin
-  Result := TJSONArray.Create;
+  Result := TJsonArray.Create;
   for I := 0 to ALogs.Count - 1 do
     Result.Add(ALogs[I]);
 end;
 
-function TIBMCPManagementTools.BackupDatabase(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPManagementTools.BackupDatabase(const Args: TJsonObject): TMCPToolResult;
 var
   LBackupFile: string;
   LBackup: TFDIBBackup;
   LDriverLink: TFDPhysIBDriverLink;
   LLogs: TStringList;
-  LLogsJson: TJSONArray;
+  LLogsJson: TJsonArray;
   LReceiver: TServiceProgressReceiver;
   LStopwatch: TStopwatch;
 begin
   if not(urDba in TIBMCPApp.Current.UserLevel) then
     Exit(TMCPToolResult.Error('Forbidden: DBA access required'));
 
-  LBackupFile := Args.GetValue<string>('backup_file', '');
+  LBackupFile := Args.S['backup_file'];
   if LBackupFile = '' then
     Exit(TMCPToolResult.Error('Parameter backup_file is required.'));
 
@@ -172,7 +187,7 @@ begin
 
       LStopwatch.Stop;
       LLogs.Add(Format('Task completed successfully in %d ms.', [LStopwatch.ElapsedMilliseconds]));
-      FAudit.WriteToolCall('backup_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'success');
+      FAudit.WriteToolCall('backup_database', Args.ToJson, LStopwatch.ElapsedMilliseconds, 'success');
       LLogsJson := LogsToJSONArray(LLogs);
       try
         Result := BuildResult('backup_database', 'completed', LStopwatch.ElapsedMilliseconds, LLogsJson);
@@ -184,7 +199,7 @@ begin
         begin
           LStopwatch.Stop;
           LLogs.Add('Task failed: ' + E.Message);
-          FAudit.WriteToolCall('backup_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+          FAudit.WriteToolCall('backup_database', Args.ToJson, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
           LLogsJson := LogsToJSONArray(LLogs);
           try
             Result := BuildResult('backup_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
@@ -201,7 +216,7 @@ begin
   end;
 end;
 
-function TIBMCPManagementTools.RestoreDatabase(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPManagementTools.RestoreDatabase(const Args: TJsonObject): TMCPToolResult;
 var
   LBackupFile: string;
   LTargetDatabase: string;
@@ -209,20 +224,20 @@ var
   LRestore: TFDIBRestore;
   LDriverLink: TFDPhysIBDriverLink;
   LLogs: TStringList;
-  LLogsJson: TJSONArray;
+  LLogsJson: TJsonArray;
   LReceiver: TServiceProgressReceiver;
   LStopwatch: TStopwatch;
 begin
   if not(urDba in TIBMCPApp.Current.UserLevel) then
     Exit(TMCPToolResult.Error('Forbidden: DBA access required'));
 
-  LBackupFile := Args.GetValue<string>('backup_file', '');
-  LTargetDatabase := Args.GetValue<string>('target_database', '');
+  LBackupFile := Args.S['backup_file'];
+  LTargetDatabase := Args.S['target_database'];
   if LBackupFile = '' then
     Exit(TMCPToolResult.Error('Parameter backup_file is required.'));
   if LTargetDatabase = '' then
     Exit(TMCPToolResult.Error('Parameter target_database is required.'));
-  LPageSize := Args.GetValue<Integer>('page_size', 0);
+  LPageSize := Args.I['page_size'];
 
   LLogs := TStringList.Create;
   LReceiver := TServiceProgressReceiver.Create(LLogs);
@@ -249,7 +264,7 @@ begin
 
       LStopwatch.Stop;
       LLogs.Add(Format('Task completed successfully in %d ms.', [LStopwatch.ElapsedMilliseconds]));
-      FAudit.WriteToolCall('restore_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'success');
+      FAudit.WriteToolCall('restore_database', Args.ToJson, LStopwatch.ElapsedMilliseconds, 'success');
       LLogsJson := LogsToJSONArray(LLogs);
       try
         Result := BuildResult('restore_database', 'completed', LStopwatch.ElapsedMilliseconds, LLogsJson);
@@ -261,7 +276,7 @@ begin
         begin
           LStopwatch.Stop;
           LLogs.Add('Task failed: ' + E.Message);
-          FAudit.WriteToolCall('restore_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+          FAudit.WriteToolCall('restore_database', Args.ToJson, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
           LLogsJson := LogsToJSONArray(LLogs);
           try
             Result := BuildResult('restore_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
@@ -278,20 +293,20 @@ begin
   end;
 end;
 
-function TIBMCPManagementTools.ValidateDatabase(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPManagementTools.ValidateDatabase(const Args: TJsonObject): TMCPToolResult;
 var
   LRepair: Boolean;
   LValidate: TFDIBValidate;
   LDriverLink: TFDPhysIBDriverLink;
   LLogs: TStringList;
-  LLogsJson: TJSONArray;
+  LLogsJson: TJsonArray;
   LReceiver: TServiceProgressReceiver;
   LStopwatch: TStopwatch;
 begin
   if not(urDba in TIBMCPApp.Current.UserLevel) then
     Exit(TMCPToolResult.Error('Forbidden: DBA access required'));
 
-  LRepair := Args.GetValue<Boolean>('repair', False);
+  LRepair := Args.B['repair'];
 
   LLogs := TStringList.Create;
   LReceiver := TServiceProgressReceiver.Create(LLogs);
@@ -322,7 +337,7 @@ begin
 
       LStopwatch.Stop;
       LLogs.Add(Format('Task completed successfully in %d ms.', [LStopwatch.ElapsedMilliseconds]));
-      FAudit.WriteToolCall('validate_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'success');
+      FAudit.WriteToolCall('validate_database', Args.ToJson, LStopwatch.ElapsedMilliseconds, 'success');
       LLogsJson := LogsToJSONArray(LLogs);
       try
         Result := BuildResult('validate_database', 'completed', LStopwatch.ElapsedMilliseconds, LLogsJson);
@@ -334,7 +349,7 @@ begin
         begin
           LStopwatch.Stop;
           LLogs.Add('Task failed: ' + E.Message);
-          FAudit.WriteToolCall('validate_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+          FAudit.WriteToolCall('validate_database', Args.ToJson, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
           LLogsJson := LogsToJSONArray(LLogs);
           try
             Result := BuildResult('validate_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);
@@ -351,12 +366,12 @@ begin
   end;
 end;
 
-function TIBMCPManagementTools.SweepDatabase(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPManagementTools.SweepDatabase(const Args: TJsonObject): TMCPToolResult;
 var
   LValidate: TFDIBValidate;
   LDriverLink: TFDPhysIBDriverLink;
   LLogs: TStringList;
-  LLogsJson: TJSONArray;
+  LLogsJson: TJsonArray;
   LReceiver: TServiceProgressReceiver;
   LStopwatch: TStopwatch;
 begin
@@ -383,7 +398,7 @@ begin
 
       LStopwatch.Stop;
       LLogs.Add(Format('Task completed successfully in %d ms.', [LStopwatch.ElapsedMilliseconds]));
-      FAudit.WriteToolCall('sweep_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'success');
+      FAudit.WriteToolCall('sweep_database', Args.ToJson, LStopwatch.ElapsedMilliseconds, 'success');
       LLogsJson := LogsToJSONArray(LLogs);
       try
         Result := BuildResult('sweep_database', 'completed', LStopwatch.ElapsedMilliseconds, LLogsJson);
@@ -395,7 +410,7 @@ begin
         begin
           LStopwatch.Stop;
           LLogs.Add('Task failed: ' + E.Message);
-          FAudit.WriteToolCall('sweep_database', Args.ToJSON, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+          FAudit.WriteToolCall('sweep_database', Args.ToJson, LStopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
           LLogsJson := LogsToJSONArray(LLogs);
           try
             Result := BuildResult('sweep_database', 'failed', LStopwatch.ElapsedMilliseconds, LLogsJson, E.Message);

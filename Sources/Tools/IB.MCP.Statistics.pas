@@ -3,7 +3,7 @@ unit IB.MCP.Statistics;
 interface
 
 uses
-  System.JSON,
+  Dext.Core.Json.NextGen,
   Dext.AI.MCP.Attributes,
   Dext.AI.MCP.Tools,
   Dext.AI.MCP.Types;
@@ -20,37 +20,37 @@ type
     constructor Create; overload;
 
     [MCPTool('stat_attachments', 'Returns one row for each connection to a database')]
-    function StatAttachments(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatAttachments(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('stat_database', 'Returns one row for each database you are attached to')]
-    function StatDatabase(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatDatabase(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('stat_heaps', 'Returns one row for each entry in the InterBase Random and Block heap')]
-    function StatHeaps(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatHeaps(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('stat_indices', 'Returns one row for each index loaded into database cache')]
-    function StatIndices(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatIndices(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('stat_pool_blocks', 'Returns one row for each block of memory in each pool')]
-    function StatPoolBlocks(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatPoolBlocks(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('stat_pools', 'Returns one row for each current memory pool')]
-    function StatPools(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatPools(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('stat_procedures', 'Returns one row for each procedure loaded into database cache')]
-    function StatProcedures(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatProcedures(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('stat_relations', 'Returns one row for each relation loaded into database cache')]
-    function StatRelations(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatRelations(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('stat_statements', 'Returns one row for each statement currently executing for any current connection')]
-    function StatStatements(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatStatements(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('stat_transactions', 'Returns one row for each transaction that is active or in limbo')]
-    function StatTransactions(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatTransactions(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('stat_triggers', 'Returns one row for each trigger loaded into database cache')]
-    function StatTriggers(const Args: TJSONObject): TMCPToolResult; virtual;
+    function StatTriggers(const Args: TJsonObject): TMCPToolResult; virtual;
   end;
 
 implementation
@@ -86,7 +86,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatAttachments(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatAttachments(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_ATTACHMENTS));
@@ -96,7 +96,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatDatabase(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatDatabase(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_DATABASE));
@@ -106,7 +106,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatHeaps(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatHeaps(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_HEAPS));
@@ -116,7 +116,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatIndices(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatIndices(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_INDICES));
@@ -126,7 +126,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatPoolBlocks(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatPoolBlocks(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_POOL_BLOCKS));
@@ -136,7 +136,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatPools(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatPools(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_POOLS));
@@ -146,7 +146,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatProcedures(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatProcedures(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_PROCEDURES));
@@ -156,7 +156,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatRelations(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatRelations(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_RELATIONS));
@@ -166,7 +166,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatStatements(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatStatements(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_STATEMENTS));
@@ -176,7 +176,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatTransactions(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatTransactions(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_TRANSACTIONS));
@@ -186,7 +186,7 @@ begin
   end;
 end;
 
-function TIBMCPStatisticsTools.StatTriggers(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPStatisticsTools.StatTriggers(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_MONITOR_TRIGGERS));

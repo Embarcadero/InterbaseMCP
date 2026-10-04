@@ -579,7 +579,6 @@ type
 implementation
 
 uses
-  System.JSON,
   FireDAC.Stan.Intf,
   FireDAC.Stan.StorageJSON;
 

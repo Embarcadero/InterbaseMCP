@@ -3,7 +3,7 @@ unit IB.MCP.Schema;
 interface
 
 uses
-  System.JSON,
+  Dext.Core.Json.NextGen,
   Dext.AI.MCP.Attributes,
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
@@ -33,48 +33,48 @@ type
     destructor Destroy; override;
 
     [MCPTool('get_database_info', 'Get InterBase database information')]
-    function GetDatabaseInfo(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetDatabaseInfo(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_tables', 'Get user tables in the InterBase database')]
-    function GetTables(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetTables(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_columns', 'Get columns for an InterBase table')]
     [MCPParam('table_name', 'Table name')]
-    function GetColumns(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetColumns(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_indexes', 'Get indexes for an InterBase table')]
     [MCPParam('table_name', 'Table name')]
-    function GetIndexes(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetIndexes(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_foreign_keys', 'Get foreign keys for an InterBase table')]
     [MCPParam('table_name', 'Table name')]
-    function GetForeignKeys(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetForeignKeys(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_views', 'List InterBase views with source')]
-    function GetViews(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetViews(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_check_constraints', 'List InterBase check constraints')]
-    function GetCheckConstraints(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetCheckConstraints(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_triggers', 'Inspect InterBase triggers with source code')]
     [MCPParam('table_name', 'Optional table name filter', ptString, False)]
-    function GetTriggers(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetTriggers(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_stored_procedures', 'Inspect InterBase stored procedures with source code')]
     [MCPParam('name_filter', 'Optional procedure name filter', ptString, False)]
-    function GetStoredProcedures(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetStoredProcedures(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_functions', 'Inspect InterBase user defined functions')]
-    function GetFunctions(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetFunctions(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_exceptions', 'Inspect InterBase exceptions')]
-    function GetExceptions(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetExceptions(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_generators', 'Inspect InterBase generators and sequences')]
-    function GetGenerators(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetGenerators(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_domains', 'Inspect InterBase domains')]
-    function GetDomains(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetDomains(const Args: TJsonObject): TMCPToolResult; virtual;
   end;
 
 implementation
@@ -104,18 +104,18 @@ function TIBMCPSchemaTools.RunDiscoveryQuery(const AToolName, ASql, AParamName, 
 var
   Connection: TFDConnection;
   Query: TFDQuery;
-  Params: TJSONObject;
+  Params: TJsonObject;
   Stopwatch: TStopwatch;
 begin
   Stopwatch := TStopwatch.StartNew;
   Connection := TIBMCPApp.Current.ConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
-    Params := TJSONObject.Create;
+    Params := TJsonObject.Create;
     try
       try
         if AParamName <> '' then
-          Params.AddPair(AParamName, AParamValue);
+          Params.S[AParamName] := AParamValue;
         Query.Connection := Connection;
         Query.SQL.Text := ASql;
         if (AParamName <> '') and (AParamValue <> '') then
@@ -123,11 +123,11 @@ begin
         Query.Open;
         Result := TIBMCPDatasetHelper.DatasetToJson(Query);
         Stopwatch.Stop;
-        FAudit.WriteToolCall(AToolName, Params.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
+        FAudit.WriteToolCall(AToolName, Params.ToJson, Stopwatch.ElapsedMilliseconds, 'success');
       except
         on E: Exception do begin
           Stopwatch.Stop;
-          FAudit.WriteToolCall(AToolName, Params.ToJSON, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+          FAudit.WriteToolCall(AToolName, Params.ToJson, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
           raise;
         end;
       end;
@@ -140,20 +140,20 @@ begin
   end;
 end;
 
-function TIBMCPSchemaTools.GetCheckConstraints(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetCheckConstraints(const Args: TJsonObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_check_constraints', SQL_GET_CHECK_CONSTRAINTS));
 end;
 
-function TIBMCPSchemaTools.GetColumns(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetColumns(const Args: TJsonObject): TMCPToolResult;
 begin
   Result :=
     TMCPToolResult.Text(
-      RunDiscoveryQuery('get_columns', SQL_GET_COLUMNS, 'table_name', Args.GetValue<string>('table_name', ''))
+      RunDiscoveryQuery('get_columns', SQL_GET_COLUMNS, 'table_name', Args.S['table_name'])
     );
 end;
 
-function TIBMCPSchemaTools.GetForeignKeys(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetForeignKeys(const Args: TJsonObject): TMCPToolResult;
 begin
   Result :=
     TMCPToolResult.Text(
@@ -161,40 +161,40 @@ begin
         'get_foreign_keys',
         SQL_GET_FOREIGN_KEYS,
         'table_name',
-        Args.GetValue<string>('table_name', '')
+        Args.S['table_name']
       )
     );
 end;
 
-function TIBMCPSchemaTools.GetIndexes(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetIndexes(const Args: TJsonObject): TMCPToolResult;
 begin
   Result :=
     TMCPToolResult.Text(
-      RunDiscoveryQuery('get_indexes', SQL_GET_INDEXES, 'table_name', Args.GetValue<string>('table_name', ''))
+      RunDiscoveryQuery('get_indexes', SQL_GET_INDEXES, 'table_name', Args.S['table_name'])
     );
 end;
 
-function TIBMCPSchemaTools.GetViews(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetViews(const Args: TJsonObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_views', SQL_GET_VIEWS));
 end;
 
-function TIBMCPSchemaTools.GetTables(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetTables(const Args: TJsonObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('list_tables', SQL_GET_TABLES));
 end;
 
-function TIBMCPSchemaTools.GetDatabaseInfo(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetDatabaseInfo(const Args: TJsonObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_database_details', SQL_GET_DATABASE_INFO));
 end;
 
-function TIBMCPSchemaTools.GetTriggers(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetTriggers(const Args: TJsonObject): TMCPToolResult;
 var
   TableName: string;
   Sql: string;
 begin
-  TableName := Args.GetValue<string>('table_name', '').Trim;
+  TableName := Args.S['table_name'].Trim;
   if TableName = '' then
     Sql := SQL_GET_TRIGGERS
   else
@@ -202,12 +202,12 @@ begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_triggers', Sql, 'table_name', TableName));
 end;
 
-function TIBMCPSchemaTools.GetStoredProcedures(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetStoredProcedures(const Args: TJsonObject): TMCPToolResult;
 var
   NameFilter: string;
   Sql: string;
 begin
-  NameFilter := Args.GetValue<string>('name_filter', '').Trim;
+  NameFilter := Args.S['name_filter'].Trim;
   if NameFilter = '' then
     Sql := SQL_GET_PROCEDURES
   else
@@ -215,22 +215,22 @@ begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_stored_procedures', Sql, 'name_filter', NameFilter));
 end;
 
-function TIBMCPSchemaTools.GetFunctions(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetFunctions(const Args: TJsonObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_functions', SQL_GET_FUNCTIONS));
 end;
 
-function TIBMCPSchemaTools.GetExceptions(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetExceptions(const Args: TJsonObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_exceptions', SQL_GET_EXCEPTIONS));
 end;
 
-function TIBMCPSchemaTools.GetGenerators(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetGenerators(const Args: TJsonObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_generators', SQL_GET_GENERATORS));
 end;
 
-function TIBMCPSchemaTools.GetDomains(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSchemaTools.GetDomains(const Args: TJsonObject): TMCPToolResult;
 begin
   Result := TMCPToolResult.Text(RunDiscoveryQuery('get_domains', SQL_GET_DOMAINS));
 end;

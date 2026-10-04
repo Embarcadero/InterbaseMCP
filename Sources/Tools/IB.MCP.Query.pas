@@ -3,7 +3,8 @@ unit IB.MCP.Query;
 interface
 
 uses
-  System.JSON,
+  Dext.Json.Types,
+  Dext.Core.Json.NextGen,
   Dext.AI.MCP.Attributes,
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
@@ -12,46 +13,46 @@ uses
   IB.MCP.AuditLogger,
   IB.MCP.Settings;
 
+type
+  /// <summary>
   /// MCP tools for SQL execution and execution-plan inspection.
   /// Routes statements to <c>ExecDataset</c> (cursor-producing) or
-  /// <c>ExecStatement</c> (DML) based on <c>ReturnsCursor</c>.
+  /// <c>ExecStatement</c> (DML) based on statement classification.
   /// </summary>
-  type
-    TIBMCPQueryTools = class(TMCPToolProvider)
-    private
-      FValidator: TIBMCPSqlValidator;
-      FSettings: TIBMCPSettings;
-      FAudit: TIBMCPAuditLogger;
+  TIBMCPQueryTools = class(TMCPToolProvider)
+  private
+    FValidator: TIBMCPSqlValidator;
+    FSettings: TIBMCPSettings;
+    FAudit: TIBMCPAuditLogger;
 
-      /// <summary>Runs a cursor-returning SQL statement and serialises the result set to JSON.</summary>
-      function ExecDataset(const ASql: string; const AParams: TJSONObject): string;
-      /// <summary>Runs a non-cursor SQL statement and returns affected-row count as JSON.</summary>
-      function ExecStatement(const ASql: string): string;
-      /// <summary>Execute a stored procedure that does not return a cursor.</summary>
-      function ExecProcedure(const AProcName: string; const AParams: TJSONObject): string;
+    /// <summary>Runs a cursor-returning SQL statement and serialises the result set to JSON.</summary>
+    function ExecDataset(const ASql: string; const AParams: TJsonObject): string;
+    /// <summary>Runs a non-cursor SQL statement and returns affected-row count as JSON.</summary>
+    function ExecStatement(const ASql: string): string;
+    /// <summary>Execute a stored procedure that does not return a cursor.</summary>
+    function ExecProcedure(const AProcName: string; const AParams: TJsonObject): string;
 
-    public
-      constructor Create; overload;
+  public
+    constructor Create; overload;
+    destructor Destroy; override;
 
-      destructor Destroy; override;
+    [MCPTool('open_cursor', 'Executes a read-only SELECT query and returns the resulting dataset. Use only for retrieving data.')]
+    [MCPParam('sql', 'The SELECT statement to execute.')]
+    function OpenCursor(const Args: TJsonObject): TMCPToolResult; virtual;
 
-      [MCPTool('open_cursor', 'Executes a read-only SELECT query and returns the resulting dataset. Use only for retrieving data.')]
-      [MCPParam('sql', 'The SELECT statement to execute.')]
-      function OpenCursor(const Args: TJSONObject): TMCPToolResult; virtual;
+    [MCPTool('execute_sql', 'Executes a non-query SQL statement (such as INSERT, UPDATE, DELETE, or DDL) on the InterBase database.')]
+    [MCPParam('sql', 'The DML or DDL statement to execute. Do not use for SELECT statements.')]
+    function ExecuteSql(const Args: TJsonObject): TMCPToolResult; virtual;
 
-      [MCPTool('execute_sql', 'Executes a non-query SQL statement (such as INSERT, UPDATE, DELETE, or DDL) on the InterBase database.')]
-      [MCPParam('sql', 'The DML or DDL statement to execute. Do not use for SELECT statements.')]
-      function ExecuteSql(const Args: TJSONObject): TMCPToolResult; virtual;
+    [MCPTool('explain_plan', 'Retrieves the InterBase execution plan for a SQL query to analyze performance and index usage.')]
+    [MCPParam('sql', 'The SQL statement to analyze.')]
+    function ExplainPlan(const Args: TJsonObject): TMCPToolResult; virtual;
 
-      [MCPTool('explain_plan', 'Retrieves the InterBase execution plan for a SQL query to analyze performance and index usage.')]
-      [MCPParam('sql', 'The SQL statement to analyze.')]
-      function ExplainPlan(const Args: TJSONObject): TMCPToolResult; virtual;
-
-      [MCPTool('execute_procedure', 'Executes an InterBase stored procedure and returns its execution status or output variables.')]
-      [MCPParam('proc_name', 'The name of the stored procedure to execute.')]
-      [MCPParam('params', 'A JSON object mapping parameter names to their input values.', ptObject, False)]
-      function ExecuteProcedure(const Args: TJSONObject): TMCPToolResult; virtual;
-    end;
+    [MCPTool('execute_procedure', 'Executes an InterBase stored procedure and returns its execution status or output variables.')]
+    [MCPParam('proc_name', 'The name of the stored procedure to execute.')]
+    [MCPParam('params', 'A JSON object mapping parameter names to their input values.', ptObject, False)]
+    function ExecuteProcedure(const Args: TJsonObject): TMCPToolResult; virtual;
+  end;
 
 implementation
 
@@ -64,7 +65,36 @@ uses
   IB.MCP.App,
   IB.MCP.DatasetHelper;
 
-  { TIBMCPQueryTools }
+procedure BindJsonParams(AParams: TFDParams; const AJson: TJsonObject);
+var
+  I: Integer;
+  ParamName: string;
+  Param: TFDParam;
+begin
+  if (AParams = nil) or (AJson = nil) then
+    Exit;
+
+  for I := 0 to AJson.Count - 1 do
+  begin
+    ParamName := AJson.Names[I];
+    Param := AParams.ParamByName(ParamName);
+    case AJson.Types[ParamName] of
+      TDextJsonNodeType.jntNull:
+        Param.Clear;
+      TDextJsonNodeType.jntBoolean:
+        Param.AsBoolean := AJson.B[ParamName];
+      TDextJsonNodeType.jntNumber:
+        if Frac(AJson.D[ParamName]) = 0 then
+          Param.AsLargeInt := AJson.L[ParamName]
+        else
+          Param.AsFloat := AJson.D[ParamName];
+    else
+      Param.AsString := AJson.S[ParamName];
+    end;
+  end;
+end;
+
+{ TIBMCPQueryTools }
 
 constructor TIBMCPQueryTools.Create;
 begin
@@ -79,20 +109,17 @@ begin
   inherited Destroy;
 end;
 
-function TIBMCPQueryTools.ExecDataset(const ASql: string; const AParams: TJSONObject): string;
+function TIBMCPQueryTools.ExecDataset(const ASql: string; const AParams: TJsonObject): string;
 var
   Connection: TFDConnection;
   Query: TFDQuery;
-  Pair: TJSONPair;
 begin
   Connection := TIBMCPApp.Current.ConnectionManager.CreateConnection;
   Query := TFDQuery.Create(nil);
   try
     Query.Connection := Connection;
     Query.SQL.Text := ASql;
-    if Assigned(AParams) then
-      for Pair in AParams do
-        Query.ParamByName(Pair.JsonString.Value).Value := Pair.JsonValue.Value;
+    BindJsonParams(Query.Params, AParams);
     Query.Open;
     Result := TIBMCPDatasetHelper.DatasetToJson(Query);
   finally
@@ -114,11 +141,10 @@ begin
 end;
 
 function TIBMCPQueryTools.ExecProcedure(const AProcName: string;
-  const AParams: TJSONObject): string;
+  const AParams: TJsonObject): string;
 var
   Connection: TFDConnection;
   Proc: TFDStoredProc;
-  Pair: TJSONPair;
 begin
   Connection := TIBMCPApp.Current.ConnectionManager.CreateConnection;
   Proc := TFDStoredProc.Create(nil);
@@ -126,9 +152,7 @@ begin
     Proc.Connection := Connection;
     Proc.StoredProcName := AProcName;
     Proc.Prepare;
-    if Assigned(AParams) then
-      for Pair in AParams do
-        Proc.ParamByName(Pair.JsonString.Value).Value := Pair.JsonValue.Value;
+    BindJsonParams(Proc.Params, AParams);
     Proc.ExecProc;
     Result := '{"Affected rows": ' + Proc.RowsAffected.ToString + '}';
   finally
@@ -137,13 +161,13 @@ begin
   end;
 end;
 
-function TIBMCPQueryTools.OpenCursor(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPQueryTools.OpenCursor(const Args: TJsonObject): TMCPToolResult;
 var
   Sql: string;
   Stopwatch: TStopwatch;
   Validation: TIBMCPSqlValidationResult;
 begin
-  Sql := Args.GetValue<string>('sql', '');
+  Sql := Args.S['sql'];
   Validation := FValidator.ValidateSql(Sql);
   if not Validation.Accepted then
     Exit(TMCPToolResult.Error(Validation.Reason));
@@ -159,23 +183,23 @@ begin
     else Exit(TMCPToolResult.Error('Not a valid SELECT statement!'));
 
     Stopwatch.Stop;
-    FAudit.WriteToolCall('open_cursor', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
+    FAudit.WriteToolCall('open_cursor', Args.ToJson, Stopwatch.ElapsedMilliseconds, 'success');
   except
     on E: Exception do begin
       Stopwatch.Stop;
-      FAudit.WriteToolCall('open_cursor', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+      FAudit.WriteToolCall('open_cursor', Args.ToJson, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
       Result := TMCPToolResult.Error(E.Message);
     end;
   end;
 end;
 
-function TIBMCPQueryTools.ExecuteSql(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPQueryTools.ExecuteSql(const Args: TJsonObject): TMCPToolResult;
 var
   Sql: string;
   Stopwatch: TStopwatch;
   Validation: TIBMCPSqlValidationResult;
 begin
-  Sql := Args.GetValue<string>('sql', '');
+  Sql := Args.S['sql'];
   Validation := FValidator.ValidateSql(Sql);
   if not Validation.Accepted then
     Exit(TMCPToolResult.Error(Validation.Reason));
@@ -197,20 +221,20 @@ begin
     end else Exit(TMCPToolResult.Error('Not a valid CRUD or DDL statement!'));
 
     Stopwatch.Stop;
-    FAudit.WriteToolCall('execute_sql', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
+    FAudit.WriteToolCall('execute_sql', Args.ToJson, Stopwatch.ElapsedMilliseconds, 'success');
   except
     on E: Exception do begin
       Stopwatch.Stop;
-      FAudit.WriteToolCall('execute_sql', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+      FAudit.WriteToolCall('execute_sql', Args.ToJson, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
       Result := TMCPToolResult.Error(E.Message);
     end;
   end;
 end;
 
-function TIBMCPQueryTools.ExplainPlan(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPQueryTools.ExplainPlan(const Args: TJsonObject): TMCPToolResult;
 var
   ExecutionPlan: string;
-  Json: TJSONObject;
+  Json: TJsonObject;
   Connection: TFDConnection;
   Query: TFDQuery;
   Statement: TIBStatement;
@@ -218,7 +242,7 @@ var
   Stopwatch: TStopwatch;
   Validation: TIBMCPSqlValidationResult;
 begin
-  Sql := Args.GetValue<string>('sql', '');
+  Sql := Args.S['sql'];
   Validation := FValidator.ValidateSql(Sql);
   if not Validation.Accepted then
     Exit(TMCPToolResult.Error(Validation.Reason));
@@ -238,21 +262,21 @@ begin
         if ExecutionPlan = '' then
           ExecutionPlan := Statement.sql_explain_plan;
       end;
-      Json := TJSONObject.Create;
+      Json := TJsonObject.Create;
       try
-        Json.AddPair('prepared', TJSONBool.Create(Query.Prepared));
-        Json.AddPair('sql', Sql);
-        Json.AddPair('plan', ExecutionPlan);
-        Result := TMCPToolResult.Text(Json.ToJSON);
+        Json.B['prepared'] := Query.Prepared;
+        Json.S['sql'] := Sql;
+        Json.S['plan'] := ExecutionPlan;
+        Result := TMCPToolResult.Text(Json.ToJson);
       finally
         Json.Free;
       end;
       Stopwatch.Stop;
-      FAudit.WriteToolCall('explain_plan', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
+      FAudit.WriteToolCall('explain_plan', Args.ToJson, Stopwatch.ElapsedMilliseconds, 'success');
     except
       on E: Exception do begin
         Stopwatch.Stop;
-        FAudit.WriteToolCall('explain_plan', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+        FAudit.WriteToolCall('explain_plan', Args.ToJson, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
         Result := TMCPToolResult.Error(E.Message);
       end;
     end;
@@ -262,14 +286,17 @@ begin
   end;
 end;
 
-function TIBMCPQueryTools.ExecuteProcedure(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPQueryTools.ExecuteProcedure(const Args: TJsonObject): TMCPToolResult;
 var
-  Params: TJSONObject;
+  Params: TJsonObject;
   ProcName: string;
   Stopwatch: TStopwatch;
 begin
-  ProcName := Args.GetValue<string>('proc_name', '').Trim;
-  Params := Args.GetValue<TJSONObject>('params');
+  ProcName := Args.S['proc_name'].Trim;
+  if Args.Types['params'] = TDextJsonNodeType.jntObject then
+    Params := Args.O['params']
+  else
+    Params := nil;
 
   Stopwatch := TStopwatch.StartNew;
   try
@@ -277,11 +304,11 @@ begin
       Exit(TMCPToolResult.Error('Forbidden: CRUD access required'));
     Result := TMCPToolResult.Text(ExecProcedure(ProcName, Params));
     Stopwatch.Stop;
-    FAudit.WriteToolCall('execute_procedure', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'success');
+    FAudit.WriteToolCall('execute_procedure', Args.ToJson, Stopwatch.ElapsedMilliseconds, 'success');
   except
     on E: Exception do begin
       Stopwatch.Stop;
-      FAudit.WriteToolCall('execute_procedure', Args.ToJSON, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
+      FAudit.WriteToolCall('execute_procedure', Args.ToJson, Stopwatch.ElapsedMilliseconds, 'error: ' + E.Message);
       Result := TMCPToolResult.Error(E.Message);
     end;
   end;

@@ -3,7 +3,6 @@ unit IB.MCP.AuditLogger;
 interface
 
 uses
-  Dext.Options,
   IB.MCP.Settings;
 
 type
@@ -49,9 +48,9 @@ implementation
 uses
   System.DateUtils,
   System.IOUtils,
-  System.JSON,
   System.RegularExpressions,
   System.SysUtils,
+  Dext.Core.Json.NextGen,
   Dext.Threading.Async;
 
   { TIBMCPAuditLogger }
@@ -107,16 +106,16 @@ end;
 
 procedure TIBMCPAuditLogger.WriteToolCall(const AToolName, AParameters: string; AExecutionMs: Int64; const AOutcome: string);
 var
-  Json: TJSONObject;
+  Json: TJsonObject;
 begin
-  Json := TJSONObject.Create;
+  Json := TJsonObject.Create;
   try
-    Json.AddPair('timestamp', DateToISO8601(TTimeZone.Local.ToUniversalTime(Now), True));
-    Json.AddPair('tool', AToolName);
-    Json.AddPair('parameters', RedactCredentials(AParameters));
-    Json.AddPair('execution_ms', TJSONNumber.Create(AExecutionMs));
-    Json.AddPair('outcome', AOutcome);
-    AppendLine(Json.ToJSON);
+    Json.S['timestamp'] := DateToISO8601(TTimeZone.Local.ToUniversalTime(Now), True);
+    Json.S['tool'] := AToolName;
+    Json.S['parameters'] := RedactCredentials(AParameters);
+    Json.L['execution_ms'] := AExecutionMs;
+    Json.S['outcome'] := AOutcome;
+    AppendLine(Json.ToJson);
   finally
     Json.Free;
   end;
