@@ -3,8 +3,8 @@ unit IB.MCP.Security;
 interface
 
 uses
-  System.JSON,
   System.DateUtils,
+  Dext.Core.Json.NextGen,
   Dext.AI.MCP.Attributes,
   Dext.AI.MCP.Protocol,
   Dext.AI.MCP.Tools,
@@ -31,21 +31,21 @@ type
 
     [MCPTool('get_user_privileges', 'List InterBase privileges for a user')]
     [MCPParam('user_name', 'User name')]
-    function GetUserPrivileges(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetUserPrivileges(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('list_roles', 'List user-defined InterBase roles')]
-    function ListRoles(const Args: TJSONObject): TMCPToolResult; virtual;
+    function ListRoles(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_role_members', 'List InterBase role members')]
     [MCPParam('role_name', 'Optional role name filter', ptString, False)]
-    function GetRoleMembers(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetRoleMembers(const Args: TJsonObject): TMCPToolResult; virtual;
 
     [MCPTool('get_audit_log', 'Read the MCP todays audit log with paging and filters')]
     [MCPParam('tool_name', 'Optional tool name filter', ptString, False)]
     [MCPParam('outcome', 'Optional outcome text filter', ptString, False)]
     [MCPParam('offset', 'Rows to skip', ptInteger, False)]
     [MCPParam('limit', 'Maximum rows to return', ptInteger, False)]
-    function GetAuditLog(const Args: TJSONObject): TMCPToolResult; virtual;
+    function GetAuditLog(const Args: TJsonObject): TMCPToolResult; virtual;
   end;
 
 implementation
@@ -94,18 +94,18 @@ begin
   end;
 end;
 
-function TIBMCPSecurityTools.GetUserPrivileges(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSecurityTools.GetUserPrivileges(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result :=
-      TMCPToolResult.Text(QueryJson(SQL_GET_USER_PRIVILEGES, 'user_name', Args.GetValue<string>('user_name', '')));
+      TMCPToolResult.Text(QueryJson(SQL_GET_USER_PRIVILEGES, 'user_name', Args.S['user_name']));
   except
     on E: Exception do
       Result := TMCPToolResult.Error(E.Message);
   end;
 end;
 
-function TIBMCPSecurityTools.ListRoles(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSecurityTools.ListRoles(const Args: TJsonObject): TMCPToolResult;
 begin
   try
     Result := TMCPToolResult.Text(QueryJson(SQL_LIST_ROLES));
@@ -115,12 +115,12 @@ begin
   end;
 end;
 
-function TIBMCPSecurityTools.GetRoleMembers(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSecurityTools.GetRoleMembers(const Args: TJsonObject): TMCPToolResult;
 var
   RoleName: string;
   Sql: string;
 begin
-  RoleName := Args.GetValue<string>('role_name', '');
+  RoleName := Args.S['role_name'];
   if RoleName = '' then
     Sql := SQL_GET_ROLE_MEMBERS
   else
@@ -133,19 +133,21 @@ begin
   end;
 end;
 
-function TIBMCPSecurityTools.GetAuditLog(const Args: TJSONObject): TMCPToolResult;
+function TIBMCPSecurityTools.GetAuditLog(const Args: TJsonObject): TMCPToolResult;
 var
   FileName: string;
   Lines: TStringList;
-  Arr: TJSONArray;
+  Arr: TJsonArray;
   I, Added, Offset, Limit: Integer;
   Line, ToolName, Outcome: string;
 begin
-  Offset := Args.GetValue<Integer>('offset', 0);
-  Limit := Args.GetValue<Integer>('limit', 100);
-  ToolName := Args.GetValue<string>('tool_name', '');
-  Outcome := Args.GetValue<string>('outcome', '');
-  Arr := TJSONArray.Create;
+  Offset := Args.I['offset'];
+  Limit := Args.I['limit'];
+  if Limit <= 0 then
+    Limit := 100;
+  ToolName := Args.S['tool_name'];
+  Outcome := Args.S['outcome'];
+  Arr := TJsonArray.Create;
   Lines := TStringList.Create;
   try
     FileName := ChangeFileExt(FSettings.AuditPath, '.' + FormatDateTime('yyyymmdd', Today) + '.jsonl');
@@ -163,7 +165,7 @@ begin
       if Added >= Limit then
         Break;
     end;
-    Result := TMCPToolResult.Text(Arr.ToJSON);
+    Result := TMCPToolResult.Text(Arr.ToJson);
   finally
     Lines.Free;
     Arr.Free;
